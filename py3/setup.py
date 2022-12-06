@@ -28,7 +28,7 @@ requires = [
 #print('Requirements: %s' % ','.join(requires))
 
 scripts = [
-    "bin/marmeQmail.py",
+    "bin/marmeeQmail.cs",
 ]
 
 #

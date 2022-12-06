@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 """ #+begin_org
-* ~[Summary]~ :: A =CS-Lib= for InMail Abstracted Accessible Service (aas) Offline Imap.
+* ~[Summary]~ :: A =CS-Lib= maildrop.
 #+end_org """
 
 ####+BEGIN: b:py3:cs:file/dblockControls :classification "cs-u"
@@ -38,12 +38,10 @@
 * *[[elisp:(org-cycle)][| Particulars-csInfo |]]*
 #+end_org """
 import typing
-
-from google import oauth2
-csInfo: typing.Dict[str, typing.Any] = { 'moduleName': ['aasInMailOfflineimap'], }
-csInfo['version'] = '202209281438'
+csInfo: typing.Dict[str, typing.Any] = { 'moduleName': ['marmeeQmail'], }
+csInfo['version'] = '202212053620'
 csInfo['status']  = 'inUse'
-csInfo['panel'] = 'aasInMailOfflineimap-Panel.org'
+csInfo['panel'] = 'marmeeQmail-Panel.org'
 csInfo['groupingType'] = 'IcmGroupingType-pkged'
 csInfo['cmndParts'] = 'IcmCmndParts[common] IcmCmndParts[param]'
 ####+END:
@@ -119,36 +117,6 @@ from bisos import b
 #+end_org """
 ####+END:
 
-####+BEGIN: b:py3:cs:func/typing :funcName "examplesAas_csu" :funcType "eType" :retType "" :deco "default" :argsList ""
-""" #+begin_org
-*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  F-T-eType  [[elisp:(outline-show-subtree+toggle)][||]] /examplesAas_csu/  deco=default  [[elisp:(org-cycle)][| ]]
-#+end_org """
-@cs.track(fnLoc=True, fnEntry=True, fnExit=True)
-def examplesAas_csu(
-####+END:
-        marmeeBase: typing.Optional[str],
-        sectionTitle: typing.AnyStr = "",
-) -> None:
-    """ #+begin_org
-** [[elisp:(org-cycle)][| *DocStr | ] Examples of Service Access Instance Commands.
-    #+end_org """
-
-    def cpsInit(): return collections.OrderedDict()
-    def menuItem(verbosity): cs.examples.cmndInsert(cmndName, cps, cmndArgs, verbosity=verbosity) # 'little' or 'none'
-    # def execLineEx(cmndStr): cs.examples.execInsert(execLine=cmndStr)
-
-    if sectionTitle == "default":
-        cs.examples.menuChapter('*Here qmail Config Utilities*')
-
-    if marmeeBase == None:
-        return
-
-    #cs.examples.menuChapter('*Gmail Config Utilities*')
-
-    cmndName = "marmeeQmailAcctUpdate" ;  cmndArgs = "alias"
-    cps=cpsInit(); cps['aasMarmeeBase'] = marmeeBase
-    menuItem(verbosity='none') #; menuItem(verbosity='full')
-
 ####+BEGIN: b:py3:cs:func/typing :funcName "examples_csu" :funcType "eType" :retType "" :deco "default" :argsList ""
 """ #+begin_org
 *  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  F-T-eType  [[elisp:(outline-show-subtree+toggle)][||]] /examples_csu/  deco=default  [[elisp:(org-cycle)][| ]]
@@ -170,45 +138,16 @@ def examples_csu(
     # def execLineEx(cmndStr): cs.examples.execInsert(execLine=cmndStr)
 
     if sectionTitle == "default":
-        cs.examples.menuChapter('*Gmail Config Utilities*')
+        cs.examples.menuChapter('*Mail Drop Utilities*')
 
     if marmeeBase == None:
         return
 
-    #cs.examples.menuChapter('*Gmail Config Utilities*')
+    cs.examples.menuChapter('*Maildrop  Action*')
 
-    cs.examples.menuChapter('*Full Action*')
-
-    icmWrapper = "" ;  cmndName = "marmeeQmailConfig"
-    cps = cpsInit() ;  cmndArgs = "" ;
-    cs.examples.cmndInsert(cmndName, cps, cmndArgs, verbosity='none', icmWrapper=icmWrapper)
-
-    cs.examples.menuChapter('*Qmail Config*')
-
-    icmWrapper = "" ;  cmndName = "marmeeQmailConfig"
-    cps = cpsInit() ;  cmndArgs = "" ;
-    cs.examples.cmndInsert(cmndName, cps, cmndArgs, verbosity='none', icmWrapper=icmWrapper)
-
-    cs.examples.menuChapter('*Services Activation, Services Manipulation*')
-
-    icmWrapper = "" ;  cmndName = "marmeeQmailRun"
-    cps = cpsInit() ; cmndArgs = "" ;
-    cs.examples.cmndInsert(cmndName, cps, cmndArgs, verbosity='none', icmWrapper=icmWrapper)
-
-    cs.examples.menuChapter('*Here Maildir*')
-
-    icmWrapper = "" ;  cmndName = "marmeeMaildirCreate"
+    icmWrapper = "" ;  cmndName = "maildropToRunEnvFromOrAcctAddrs"
     cps = cpsInit() ; cps['bpoId'] = bpoId ; cps['envRelPath'] = envRelPath
-    cmndArgs = "main"
-    cs.examples.cmndInsert(cmndName, cps, cmndArgs, verbosity='none', icmWrapper=icmWrapper)
-
-    icmWrapper = "" ;  cmndName = "marmeeHereMaildirVerify"
-    cps = cpsInit() ;  cmndArgs = "" ;
-    cs.examples.cmndInsert(cmndName, cps, cmndArgs, verbosity='none', icmWrapper=icmWrapper)
-
-    icmWrapper = "" ;  cmndName = "marmeeQmailDrop"
-    cps = cpsInit() ; cps['bpoId'] = bpoId ; cps['envRelPath'] = envRelPath
-    cmndArgs = "main postmaster"
+    cmndArgs = "main alias postmaster"
     cs.examples.cmndInsert(cmndName, cps, cmndArgs, verbosity='none', icmWrapper=icmWrapper)
 
 
@@ -281,26 +220,9 @@ def maildropFileUpdate(
     """ #+begin_org
 ** [[elisp:(org-cycle)][| *DocStr* | ] Returns Template As String
     #+end_org """
+
     resStr = maildropStr(destMaildirPath)
     print(resStr)
-
-####+BEGIN: b:py3:cs:func/typing :funcName "dotQmailFileUpdate" :funcType "eType" :deco "default"
-""" #+begin_org
-*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  F-T-eType  [[elisp:(outline-show-subtree+toggle)][||]] /dotQmailFileUpdate/  deco=default  [[elisp:(org-cycle)][| ]]
-#+end_org """
-@cs.track(fnLoc=True, fnEntry=True, fnExit=True)
-def dotQmailFileUpdate(
-####+END:
-        destMaildirPath: str,
-        fileName: str,
-) -> None:
-    """ #+begin_org
-** [[elisp:(org-cycle)][| *DocStr* | ] Returns Template As String
-    #+end_org """
-    resStr = maildropStr(destMaildirPath)
-    print(resStr)
-
-
 
 
 ####+BEGIN: bx:cs:py3:section :title "CS-Commands"
@@ -309,162 +231,7 @@ def dotQmailFileUpdate(
 #+end_org """
 ####+END:
 
-
-####+BEGIN: b:py3:cs:cmnd/classHead :cmndName "marmeeQmailAcctUpdate" :comment "" :extent "verify" :parsMand "aasMarmeeBase" :parsOpt "" :argsMin 1 :argsMax 9999 :pyInv ""
-""" #+begin_org
-*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  CmndSvc-   [[elisp:(outline-show-subtree+toggle)][||]] <<marmeeQmailAcctUpdate>>  =verify= parsMand=aasMarmeeBase argsMin=1 argsMax=9999 ro=cli   [[elisp:(org-cycle)][| ]]
-#+end_org """
-class marmeeQmailAcctUpdate(cs.Cmnd):
-    cmndParamsMandatory = [ 'aasMarmeeBase', ]
-    cmndParamsOptional = [ ]
-    cmndArgsLen = {'Min': 1, 'Max': 9999,}
-
-    @cs.track(fnLoc=True, fnEntry=True, fnExit=True)
-    def cmnd(self,
-             rtInv: cs.RtInvoker,
-             cmndOutcome: b.op.Outcome,
-             aasMarmeeBase: typing.Optional[str]=None,  # Cs Mandatory Param
-             argsList: typing.Optional[list[str]]=None,  # CsArgs
-    ) -> b.op.Outcome:
-
-        callParamsDict = {'aasMarmeeBase': aasMarmeeBase, }
-        if self.invocationValidate(rtInv, cmndOutcome, callParamsDict, argsList).isProblematic():
-            return b_io.eh.badOutcome(cmndOutcome)
-        cmndArgsSpecDict = self.cmndArgsSpec()
-        aasMarmeeBase = csParam.mappedValue('aasMarmeeBase', aasMarmeeBase)
-####+END:
-        self.cmndDocStr(f""" #+begin_org
-** [[elisp:(org-cycle)][| *CmndDesc:* | ]]
-        #+end_org """)
-
-        cmndArgsSpecDict = self.cmndArgsSpec()
-        qmailAccts = self.cmndArgsGet("0&9999", cmndArgsSpecDict, argsList)
-
-        qmailBasePath = pathlib.Path(aasMarmeeBase).joinpath('qmail')
-
-        for eachAcct in qmailAccts:
-            controlBasePath = qmailBasePath.joinpath(eachAcct).joinpath('control')
-            #print(controlBasePath)
-            inMailFpsBase = controlBasePath.joinpath('inMail/fp')
-            inMailFpsInst = b.pattern.sameInstance(aasInMailFps.AasInMail_FPs, fpBase=inMailFpsBase)
-            inMailFpsInst.fps_setParam('userName', eachAcct)
-            inMailFpsInst.fps_setParam('svcProvider', 'qmail')
-            inMailFpsInst.fps_setParam('svcInstance', eachAcct)
-
-            outMailFpsBase = controlBasePath.joinpath('outMail/fp')
-            outMailFpsInst = b.pattern.sameInstance(aasOutMailFps.AasOutMail_FPs, fpBase=outMailFpsBase)
-            outMailFpsInst.fps_setParam('outMail_useSsl', 'True')
-            outMailFpsInst.fps_setParam('outMail_port', '465')
-            outMailFpsInst.fps_setParam('outMail_smtpServer', 'NOTYET')
-            outMailFpsInst.fps_setParam('outMail_userName', f"{eachAcct}@NOTYET")
-
-        return cmndOutcome.set(
-            opError=b.OpError.Success,
-            opResults=True,
-        )
-
-####+BEGIN: b:py3:cs:method/args :methodName "cmndArgsSpec" :methodType "anyOrNone" :retType "bool" :deco "default" :argsList "self"
-    """ #+begin_org
-**  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  Mtd-T-anyOrNone [[elisp:(outline-show-subtree+toggle)][||]] /cmndArgsSpec/ deco=default  deco=default   [[elisp:(org-cycle)][| ]]
-    #+end_org """
-    @cs.track(fnLoc=True, fnEntry=True, fnExit=True)
-    def cmndArgsSpec(self, ):
-####+END:
-        """  #+begin_org
-** [[elisp:(org-cycle)][| *cmndArgsSpec:* | ]]
-        #+end_org """
-
-        cmndArgsSpecDict = cs.arg.CmndArgsSpecDict()
-        cmndArgsSpecDict.argsDictAdd(
-            argPosition="0&9999",
-            argName="gmailAccts",
-            argChoices=[],
-            argDescription="Gmail Accounts"
-        )
-
-        return cmndArgsSpecDict
-
-####+BEGIN: b:py3:cs:cmnd/classHead :cmndName "marmeeMaildirCreate" :comment "" :extent "verify" :parsMand "bpoId envRelPath" :argsMin 1 :argsMax 9999 :pyInv ""
-""" #+begin_org
-*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  CmndSvc-   [[elisp:(outline-show-subtree+toggle)][||]] <<marmeeMaildirCreate>>  =verify= parsMand=bpoId envRelPath argsMin=1 argsMax=9999 ro=cli   [[elisp:(org-cycle)][| ]]
-#+end_org """
-class marmeeMaildirCreate(cs.Cmnd):
-    cmndParamsMandatory = [ 'bpoId', 'envRelPath', ]
-    cmndParamsOptional = [ ]
-    cmndArgsLen = {'Min': 1, 'Max': 9999,}
-
-    @cs.track(fnLoc=True, fnEntry=True, fnExit=True)
-    def cmnd(self,
-             rtInv: cs.RtInvoker,
-             cmndOutcome: b.op.Outcome,
-             bpoId: typing.Optional[str]=None,  # Cs Mandatory Param
-             envRelPath: typing.Optional[str]=None,  # Cs Mandatory Param
-             argsList: typing.Optional[list[str]]=None,  # CsArgs
-    ) -> b.op.Outcome:
-
-        callParamsDict = {'bpoId': bpoId, 'envRelPath': envRelPath, }
-        if self.invocationValidate(rtInv, cmndOutcome, callParamsDict, argsList).isProblematic():
-            return b_io.eh.badOutcome(cmndOutcome)
-        cmndArgsSpecDict = self.cmndArgsSpec()
-        bpoId = csParam.mappedValue('bpoId', bpoId)
-        envRelPath = csParam.mappedValue('envRelPath', envRelPath)
-####+END:
-        self.cmndDocStr(f""" #+begin_org
-** [[elisp:(org-cycle)][| *CmndDesc:* | ]] in data (var/data) of envRelPath create a maildir, then for each arg, run maildirmake.
-        It is meant to be used anytime that we want to create a maildir.
-        #+end_org """)
-
-        cmndArgsSpecDict = self.cmndArgsSpec()
-        maildirNames = self.cmndArgsGet("0&9999", cmndArgsSpecDict, argsList)
-
-        runEnvBases = b.pattern.sameInstance(
-            bpoRunBases.BpoRunEnvBases,
-            bpoId,
-            envRelPath,
-        )
-        runEnvBases.basesUpdate()
-        dataBase = runEnvBases.dataBasePath_obtain()
-
-        maildirFullPath = pathlib.Path(os.path.join(dataBase, 'maildir'))
-
-        if not maildirFullPath.is_dir():
-            maildirFullPath.mkdir(parents=True, exist_ok=True)
-
-        for eachMaildir in maildirNames:
-            hereMaildirMainBase = maildirFullPath.joinpath(eachMaildir)
-
-            if not hereMaildirMainBase.joinpath('new').is_dir():
-                if not (resStr := b.subProc.WOpW(invedBy=self, log=1).bash(
-                    f"""maildirmake {hereMaildirMainBase}""",
-                ).stdout):
-                    b_io.eh.badOutcome(cmndOutcome)
-                    #return(b_io.eh.badOutcome(cmndOutcome))
-
-        return(cmndOutcome)
-
-####+BEGIN: b:py3:cs:method/args :methodName "cmndArgsSpec" :methodType "anyOrNone" :retType "bool" :deco "default" :argsList "self"
-    """ #+begin_org
-**  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  Mtd-T-anyOrNone [[elisp:(outline-show-subtree+toggle)][||]] /cmndArgsSpec/ deco=default  deco=default   [[elisp:(org-cycle)][| ]]
-    #+end_org """
-    @cs.track(fnLoc=True, fnEntry=True, fnExit=True)
-    def cmndArgsSpec(self, ):
-####+END:
-        """  #+begin_org
-** [[elisp:(org-cycle)][| *cmndArgsSpec:* | ]]
-        #+end_org """
-
-        cmndArgsSpecDict = cs.arg.CmndArgsSpecDict()
-        cmndArgsSpecDict.argsDictAdd(
-            argPosition="0&9999",
-            argName="maildirNames",
-            argChoices=[],
-            argDescription="Name Of Maildirs To Create."
-        )
-
-        return cmndArgsSpecDict
-
-
-####+BEGIN: b:py3:cs:cmnd/classHead :cmndName "marmeeQmailDrop" :comment "" :extent "verify" :parsMand "bpoId envRelPath" :argsMin 2 :argsMax 9999 :pyInv ""
+####+BEGIN: b:py3:cs:cmnd/classHead :cmndName "maildropToRunEnvFromOrAcctAddrs" :comment "" :extent "verify" :parsMand "bpoId envRelPath" :argsMin 3 :argsMax 9999 :pyInv ""
 """ #+begin_org
 *  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  CmndSvc-   [[elisp:(outline-show-subtree+toggle)][||]] <<marmeeQmailDrop>>  =verify= parsMand=bpoId envRelPath argsMin=2 argsMax=9999 ro=cli   [[elisp:(org-cycle)][| ]]
 #+end_org """
@@ -490,9 +257,9 @@ class marmeeQmailDrop(cs.Cmnd):
         envRelPath = csParam.mappedValue('envRelPath', envRelPath)
 ####+END:
         self.cmndDocStr(f""" #+begin_org
-** [[elisp:(org-cycle)][| *CmndDesc:* | ]] arg1 is destintation maildir. arg2-N are addr in ~alias/.qmail-addr.
-        Permissions are fully relaxed in the destination maildir so that user alias can write there.
-        For each entry in ~alias/.qmail-addr we add a line for maildrop.
+** [[elisp:(org-cycle)][| *CmndDesc:* | ]] arg1 is destintation maildir. arg2 is a qmailOrAcct arg3-N are qmailOrAcctAddrs
+        Permissions are fully relaxed in the destination maildir so that qmailOrAcct can write there.
+        In qmailOrAcct for each specified qmailOrAcctAddr, we update the ~qmailOrAcct/.maildrop.qmailOrAcctAddr
         #+end_org """)
 
         cmndArgsSpecDict = self.cmndArgsSpec()
@@ -551,78 +318,22 @@ class marmeeQmailDrop(cs.Cmnd):
             argPosition="0",
             argName="maildirName",
             argChoices=[],
-            argDescription="Maildir Name"
+            argDescription="Destination Maildir Name"
         )
         cmndArgsSpecDict.argsDictAdd(
-            argPosition="1&9999",
+            argPosition="1",
+            argName="qmailOrAcct",
+            argChoices=[],
+            argDescription="qmail OR Account"
+        )
+        return cmndArgsSpecDict
+        cmndArgsSpecDict.argsDictAdd(
+            argPosition="2&9999",
             argName="qmailAddrs",
             argChoices=[],
             argDescription="qmail Addresses"
         )
         return cmndArgsSpecDict
-
-
-
-####+BEGIN: b:py3:cs:cmnd/classHead :cmndName "marmeeHereMaildirVerify" :comment "" :extent "verify" :parsMand "" :argsMin 0 :argsMax 0 :pyInv ""
-""" #+begin_org
-*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  CmndSvc-   [[elisp:(outline-show-subtree+toggle)][||]] <<marmeeHereMaildirVerify>>  =verify= ro=cli   [[elisp:(org-cycle)][| ]]
-#+end_org """
-class marmeeHereMaildirVerify(cs.Cmnd):
-    cmndParamsMandatory = [ ]
-    cmndParamsOptional = [ ]
-    cmndArgsLen = {'Min': 0, 'Max': 0,}
-
-    @cs.track(fnLoc=True, fnEntry=True, fnExit=True)
-    def cmnd(self,
-             rtInv: cs.RtInvoker,
-             cmndOutcome: b.op.Outcome,
-    ) -> b.op.Outcome:
-
-        callParamsDict = {}
-        if self.invocationValidate(rtInv, cmndOutcome, callParamsDict, None).isProblematic():
-            return b_io.eh.badOutcome(cmndOutcome)
-####+END:
-        self.cmndDocStr(f""" #+begin_org
-** [[elisp:(org-cycle)][| *CmndDesc:* | ]]  Does and inject and verifies that it lands in the right place.
-*** qmailBinsPrep
-*** mailTools ---
-        #+end_org """)
-
-        print(self.docStrCmndMethod())
-
-        return(cmndOutcome)
-
-
-
-####+BEGIN: b:py3:cs:cmnd/classHead :cmndName "marmeeQmailConfig" :comment "" :extent "verify" :parsMand "" :argsMin 0 :argsMax 0 :pyInv ""
-""" #+begin_org
-*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  CmndSvc-   [[elisp:(outline-show-subtree+toggle)][||]] <<marmeeQmailConfig>>  =verify= ro=cli   [[elisp:(org-cycle)][| ]]
-#+end_org """
-class marmeeQmailConfig(cs.Cmnd):
-    cmndParamsMandatory = [ ]
-    cmndParamsOptional = [ ]
-    cmndArgsLen = {'Min': 0, 'Max': 0,}
-
-    @cs.track(fnLoc=True, fnEntry=True, fnExit=True)
-    def cmnd(self,
-             rtInv: cs.RtInvoker,
-             cmndOutcome: b.op.Outcome,
-    ) -> b.op.Outcome:
-
-        callParamsDict = {}
-        if self.invocationValidate(rtInv, cmndOutcome, callParamsDict, None).isProblematic():
-            return b_io.eh.badOutcome(cmndOutcome)
-####+END:
-        self.cmndDocStr(f""" #+begin_org
-** [[elisp:(org-cycle)][| *CmndDesc:* | ]]  Install the following:
-*** qmailBinsPrep
-*** mailTools ---
-        #+end_org """)
-
-        print(self.docStrCmndMethod())
-
-        return(cmndOutcome)
-
 
 
 ####+BEGIN: b:py3:cs:framework/endOfFile :basedOn "classification"
