@@ -143,8 +143,6 @@ def examples_csu(
     if marmeeBase == None:
         return
 
-    cs.examples.menuChapter('*RunEnv  Maildir Management*')
-
     icmWrapper = "" ;  cmndName = "envMaildirCreate"
     cps = cpsInit() ; cps['bpoId'] = bpoId ; cps['envRelPath'] = envRelPath
     cmndArgs = "main"

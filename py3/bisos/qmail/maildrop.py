@@ -101,8 +101,9 @@ from bisos.common import csParam
 from bisos.marmee import aasInMailFps
 from bisos.marmee import aasOutMailFps
 
-from bisos import b
+from bisos.b import pyRunAs
 
+from bisos.qmail import qmailOrAcct
 
 ####+BEGIN: blee:bxPanel:foldingSection :outLevel 0 :sep nil :title "CmndSvcs" :anchor ""  :extraInfo "Command Services Section"
 """ #+begin_org
@@ -143,7 +144,7 @@ def examples_csu(
     if marmeeBase == None:
         return
 
-    cs.examples.menuChapter('*Maildrop  Action*')
+    #cs.examples.menuChapter('*Maildrop  Action*')
 
     icmWrapper = "" ;  cmndName = "maildropToRunEnvFromOrAcctAddrs"
     cps = cpsInit() ; cps['bpoId'] = bpoId ; cps['envRelPath'] = envRelPath
@@ -224,6 +225,20 @@ def maildropFileUpdate(
     resStr = maildropStr(destMaildirPath)
     print(resStr)
 
+####+BEGIN: b:py3:cs:func/typing :funcName "maildropFileName" :funcType "eType" :deco "default"
+""" #+begin_org
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  F-T-eType  [[elisp:(outline-show-subtree+toggle)][||]] /maildropFileName/  deco=default  [[elisp:(org-cycle)][| ]]
+#+end_org """
+@cs.track(fnLoc=True, fnEntry=True, fnExit=True)
+def maildropFileName(
+####+END:
+        mailAddr: str,
+) -> pathlib.Path:
+    """ #+begin_org
+** [[elisp:(org-cycle)][| *DocStr* | ] Returns Template As String
+    #+end_org """
+    return pathlib.Path(f".maildrop-{mailAddr}")
+
 
 ####+BEGIN: bx:cs:py3:section :title "CS-Commands"
 """ #+begin_org
@@ -233,12 +248,12 @@ def maildropFileUpdate(
 
 ####+BEGIN: b:py3:cs:cmnd/classHead :cmndName "maildropToRunEnvFromOrAcctAddrs" :comment "" :extent "verify" :parsMand "bpoId envRelPath" :argsMin 3 :argsMax 9999 :pyInv ""
 """ #+begin_org
-*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  CmndSvc-   [[elisp:(outline-show-subtree+toggle)][||]] <<marmeeQmailDrop>>  =verify= parsMand=bpoId envRelPath argsMin=2 argsMax=9999 ro=cli   [[elisp:(org-cycle)][| ]]
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  CmndSvc-   [[elisp:(outline-show-subtree+toggle)][||]] <<maildropToRunEnvFromOrAcctAddrs>>  =verify= parsMand=bpoId envRelPath argsMin=3 argsMax=9999 ro=cli   [[elisp:(org-cycle)][| ]]
 #+end_org """
-class marmeeQmailDrop(cs.Cmnd):
+class maildropToRunEnvFromOrAcctAddrs(cs.Cmnd):
     cmndParamsMandatory = [ 'bpoId', 'envRelPath', ]
     cmndParamsOptional = [ ]
-    cmndArgsLen = {'Min': 2, 'Max': 9999,}
+    cmndArgsLen = {'Min': 3, 'Max': 9999,}
 
     @cs.track(fnLoc=True, fnEntry=True, fnExit=True)
     def cmnd(self,
@@ -257,14 +272,23 @@ class marmeeQmailDrop(cs.Cmnd):
         envRelPath = csParam.mappedValue('envRelPath', envRelPath)
 ####+END:
         self.cmndDocStr(f""" #+begin_org
-** [[elisp:(org-cycle)][| *CmndDesc:* | ]] arg1 is destintation maildir. arg2 is a qmailOrAcct arg3-N are qmailOrAcctAddrs
-        Permissions are fully relaxed in the destination maildir so that qmailOrAcct can write there.
+** [[elisp:(org-cycle)][| *CmndDesc:* | ]] arg0 is destintation maildir. arg1 is a qmailOrAcct arg2-N are qmailOrAcctAddrs
         In qmailOrAcct for each specified qmailOrAcctAddr, we update the ~qmailOrAcct/.maildrop.qmailOrAcctAddr
+        Permissions are expected to have been fully relaxed in the destination maildir so that qmailOrAcct can write there.
+
+
+            #os.system(f'ls -l maildropRelPath')
+            #print(resStr)
+
+            #return(cmndOutcome)
+
+
         #+end_org """)
 
         cmndArgsSpecDict = self.cmndArgsSpec()
-        maildirName = self.cmndArgsGet("0", cmndArgsSpecDict, argsList)
-        qmailAddrs = self.cmndArgsGet("1&9999", cmndArgsSpecDict, argsList)
+        destMaildirName = self.cmndArgsGet("0", cmndArgsSpecDict, argsList)
+        qmailAcct = self.cmndArgsGet("1", cmndArgsSpecDict, argsList)
+        qmailAddrs = self.cmndArgsGet("2&9999", cmndArgsSpecDict, argsList)
 
         # print(f"{maildirName} {qmailAddrs}")
 
@@ -278,12 +302,115 @@ class marmeeQmailDrop(cs.Cmnd):
 
         maildirFullPath = pathlib.Path(os.path.join(dataBase, 'maildir'))
 
-        os.system(f'chmod -R ugo+rwx {maildirFullPath}')
-        print(f'chmod -R ugo+rwx {maildirFullPath}')
+        destMaildirPath = maildirFullPath.joinpath(destMaildirName)
 
-        destMaildirPath = maildirFullPath.joinpath(maildirName)
+        qmailAcctPath = pathlib.Path(os.path.expanduser(f'~{qmailAcct}'))
+        #qmailAcctPath = qmailOrAcct.acctPathForQmailAcct(qmailAcct)
 
-        aliasBasePath = pathlib.Path(os.path.expanduser('~alias'))
+        for eachQmailAddr in qmailAddrs:
+            maildropAsStr = maildropStr(destMaildirPath)
+            maildropRelPath = maildropFileName(eachQmailAddr)
+            maildropPath = qmailAcctPath.joinpath(maildropRelPath)
+            pyRunAs.as_root_writeToFile(
+                maildropPath,
+                maildropAsStr
+            )
+            pyRunAs.as_root_osSystem(
+                f"""chown {qmailAcct} {maildropPath}"""
+            )
+            pyRunAs.as_root_osSystem(
+                f"""chmod 600 {maildropPath}"""
+            )
+            os.system(f"ls -l {maildropPath}")
+
+        return(cmndOutcome)
+
+
+####+BEGIN: b:py3:cs:method/args :methodName "cmndArgsSpec" :methodType "anyOrNone" :retType "bool" :deco "default" :argsList "self"
+    """ #+begin_org
+**  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  Mtd-T-anyOrNone [[elisp:(outline-show-subtree+toggle)][||]] /cmndArgsSpec/ deco=default  deco=default   [[elisp:(org-cycle)][| ]]
+    #+end_org """
+    @cs.track(fnLoc=True, fnEntry=True, fnExit=True)
+    def cmndArgsSpec(self, ):
+####+END:
+        """  #+begin_org
+** [[elisp:(org-cycle)][| *cmndArgsSpec:* | ]]
+        #+end_org """
+
+        cmndArgsSpecDict = cs.arg.CmndArgsSpecDict()
+        cmndArgsSpecDict.argsDictAdd(
+            argPosition="0",
+            argName="destMaildirName",
+            argChoices=[],
+            argDescription="Destination Maildir Name"
+        )
+        cmndArgsSpecDict.argsDictAdd(
+            argPosition="1",
+            argName="qmailAcct",
+            argChoices=[],
+            argDescription="qmail OR Account"
+        )
+        return cmndArgsSpecDict
+        cmndArgsSpecDict.argsDictAdd(
+            argPosition="2&9999",
+            argName="qmailAddrs",
+            argChoices=[],
+            argDescription="qmail Addresses"
+        )
+        return cmndArgsSpecDict
+
+
+####+BEGIN: b:py3:cs:cmnd/classHead :cmndName "OK2Del_maildropToRunEnvFromOrAcctAddrs" :comment "" :extent "verify" :parsMand "bpoId envRelPath" :argsMin 3 :argsMax 9999 :pyInv ""
+""" #+begin_org
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  CmndSvc-   [[elisp:(outline-show-subtree+toggle)][||]] <<OK2Del_maildropToRunEnvFromOrAcctAddrs>>  =verify= parsMand=bpoId envRelPath argsMin=3 argsMax=9999 ro=cli   [[elisp:(org-cycle)][| ]]
+#+end_org """
+class OK2Del_maildropToRunEnvFromOrAcctAddrs(cs.Cmnd):
+    cmndParamsMandatory = [ 'bpoId', 'envRelPath', ]
+    cmndParamsOptional = [ ]
+    cmndArgsLen = {'Min': 3, 'Max': 9999,}
+
+    @cs.track(fnLoc=True, fnEntry=True, fnExit=True)
+    def cmnd(self,
+             rtInv: cs.RtInvoker,
+             cmndOutcome: b.op.Outcome,
+             bpoId: typing.Optional[str]=None,  # Cs Mandatory Param
+             envRelPath: typing.Optional[str]=None,  # Cs Mandatory Param
+             argsList: typing.Optional[list[str]]=None,  # CsArgs
+    ) -> b.op.Outcome:
+
+        callParamsDict = {'bpoId': bpoId, 'envRelPath': envRelPath, }
+        if self.invocationValidate(rtInv, cmndOutcome, callParamsDict, argsList).isProblematic():
+            return b_io.eh.badOutcome(cmndOutcome)
+        cmndArgsSpecDict = self.cmndArgsSpec()
+        bpoId = csParam.mappedValue('bpoId', bpoId)
+        envRelPath = csParam.mappedValue('envRelPath', envRelPath)
+####+END:
+        self.cmndDocStr(f""" #+begin_org
+** [[elisp:(org-cycle)][| *CmndDesc:* | ]] arg0 is destintation maildir. arg1 is a qmailOrAcct arg2-N are qmailOrAcctAddrs
+        Permissions are fully relaxed in the destination maildir so that qmailOrAcct can write there.
+        In qmailOrAcct for each specified qmailOrAcctAddr, we update the ~qmailOrAcct/.maildrop.qmailOrAcctAddr
+        #+end_org """)
+
+        cmndArgsSpecDict = self.cmndArgsSpec()
+        destMaildirName = self.cmndArgsGet("0", cmndArgsSpecDict, argsList)
+        qmailOrAcct = self.cmndArgsGet("1", cmndArgsSpecDict, argsList)
+        qmailAddrs = self.cmndArgsGet("2&9999", cmndArgsSpecDict, argsList)
+
+        # print(f"{maildirName} {qmailAddrs}")
+
+        runEnvBases = b.pattern.sameInstance(
+            bpoRunBases.BpoRunEnvBases,
+            bpoId,
+            envRelPath,
+        )
+        runEnvBases.basesUpdate()
+        dataBase = runEnvBases.dataBasePath_obtain()
+
+        maildirFullPath = pathlib.Path(os.path.join(dataBase, 'maildir'))
+
+        destMaildirPath = maildirFullPath.joinpath(destMaildirName)
+
+        aliasBasePath = pathlib.Path(os.path.expanduser(f'~{qmailOrAcct}'))
 
         for eachQmailAddr in qmailAddrs:
             for eachDotQmail in aliasBasePath.iterdir():
@@ -316,7 +443,7 @@ class marmeeQmailDrop(cs.Cmnd):
         cmndArgsSpecDict = cs.arg.CmndArgsSpecDict()
         cmndArgsSpecDict.argsDictAdd(
             argPosition="0",
-            argName="maildirName",
+            argName="destMaildirName",
             argChoices=[],
             argDescription="Destination Maildir Name"
         )
@@ -334,6 +461,7 @@ class marmeeQmailDrop(cs.Cmnd):
             argDescription="qmail Addresses"
         )
         return cmndArgsSpecDict
+
 
 
 ####+BEGIN: b:py3:cs:framework/endOfFile :basedOn "classification"

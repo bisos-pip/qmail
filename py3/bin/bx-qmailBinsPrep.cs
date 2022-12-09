@@ -91,8 +91,15 @@ import collections
 import sys
 import collections
 
+import magic
+import shutil
+import pathlib
+
+
 # from bisos.marmee import marmeAcctsLib, marmeeCurrentsLib
 from bisos.currents import currentsConfig
+
+
 
 """ #+begin_org
 *  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  CsFrmWrk   [[elisp:(outline-show-subtree+toggle)][||]] ~csuList emacs-list Specifications~  [[elisp:(blee:org:code-block/above-run)][ /Eval Below/ ]] [[elisp:(org-cycle)][| ]]
@@ -225,6 +232,11 @@ class examples(cs.Cmnd):
         cps = cpsInit() ;  cmndArgs = "" ;
         cs.examples.cmndInsert(cmndName, cps, cmndArgs, verbosity='none', icmWrapper=icmWrapper)
 
+        icmWrapper = "" ;  cmndName = "qmailRemoteReplace"
+        cps = cpsInit() ;  cmndArgs = "" ;
+        cs.examples.cmndInsert(cmndName, cps, cmndArgs, verbosity='none', icmWrapper=icmWrapper)
+
+
         b.niche.examplesNicheRun("usageEnvs")
 
         return(cmndOutcome)
@@ -257,7 +269,72 @@ class marmeeQmailBinsPrep(cs.Cmnd):
 
         print(self.docStrCmndMethod())
 
+
         return(cmndOutcome)
+
+
+####+BEGIN: b:py3:cs:cmnd/classHead :cmndName "qmailRemoteReplace" :comment "" :extent "verify" :parsMand "" :argsMin 0 :argsMax 0 :pyInv ""
+""" #+begin_org
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  CmndSvc-   [[elisp:(outline-show-subtree+toggle)][||]] <<qmailRemoteReplace>>  =verify= ro=cli   [[elisp:(org-cycle)][| ]]
+#+end_org """
+class qmailRemoteReplace(cs.Cmnd):
+    cmndParamsMandatory = [ ]
+    cmndParamsOptional = [ ]
+    cmndArgsLen = {'Min': 0, 'Max': 0,}
+
+    @cs.track(fnLoc=True, fnEntry=True, fnExit=True)
+    def cmnd(self,
+             rtInv: cs.RtInvoker,
+             cmndOutcome: b.op.Outcome,
+    ) -> b.op.Outcome:
+
+        callParamsDict = {}
+        if self.invocationValidate(rtInv, cmndOutcome, callParamsDict, None).isProblematic():
+            return b_io.eh.badOutcome(cmndOutcome)
+####+END:
+        self.cmndDocStr(f""" #+begin_org
+** [[elisp:(org-cycle)][| *CmndDesc:* | ]]
+*** qmailBinsPrep
+*** mailTools ---
+        #+end_org """)
+
+        # print(self.docStrCmndMethod())
+
+
+        qmailRemoteCmnd = shutil.which("qmail-remote")
+        qmailRemoteBasicCmndPath = shutil.which("qmail-remote-basic")
+
+        if (qmailRemoteCmnd is None) and (qmailRemoteBasicCmndPath is None):
+            b_io.eh.problem_info("Missing qmail-remote and qmail-remote-basic")
+            return(b_io.eh.badOutcome(cmndOutcome))
+
+        bxQmailRemotePath  = (pathlib.Path(cs.G.icmMyFullName()).parent).joinpath("qmail-remote.cs")
+
+        if qmailRemoteCmnd:
+            qmailRemoteBasicCmndPath = f"{qmailRemoteCmnd}-basic"
+
+            if not (resStr := b.subProc.WOpW(invedBy=self, uid="root", log=1).bash(
+                f"""file {qmailRemoteCmnd}""",
+            ).stdout): return(b_io.eh.badOutcome(cmndOutcome))
+
+            if "pie executable" in resStr:
+                if b.subProc.WOpW(invedBy=self, uid="root", log=1).bash(
+                        f"""mv {qmailRemoteCmnd} {qmailRemoteBasicCmndPath}""",
+                ).isProblematic():  return(b_io.eh.badOutcome(cmndOutcome))
+
+        if qmailRemoteBasicCmndPath:
+            qmailRemoteCmnd = qmailRemoteBasicCmndPath.replace("qmail-remote-basic", "qmail-remote")
+            if b.subProc.WOpW(invedBy=self, uid="root", log=1).bash(
+                    f"""ln -s {bxQmailRemotePath} {qmailRemoteCmnd}""",
+            ).isProblematic():  return(b_io.eh.badOutcome(cmndOutcome))
+
+        if b.subProc.WOpW(invedBy=self, uid="root", log=1).bash(
+                f"""ls -l {qmailRemoteCmnd} {qmailRemoteBasicCmndPath}""",
+        ).isProblematic():  return(b_io.eh.badOutcome(cmndOutcome))
+
+        return(cmndOutcome)
+
+
 
 
 ####+BEGIN: blee:bxPanel:foldingSection :outLevel 0 :sep nil :title "Main" :anchor ""  :extraInfo "Framework Dblock"

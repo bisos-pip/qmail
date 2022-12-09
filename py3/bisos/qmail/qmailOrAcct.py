@@ -92,23 +92,180 @@ import pathlib
 import os
 #import shutil
 
-from bisos.bpo import bpoRunBases
-from bisos.bpo import bpo
+#from bisos.bpo import bpoRunBases
+#from bisos.bpo import bpo
 
 from bisos.common import csParam
 
 #from bisos.marmee import aasInMailControl
-from bisos.marmee import aasInMailFps
-from bisos.marmee import aasOutMailFps
+#from bisos.marmee import aasInMailFps
+#from bisos.marmee import aasOutMailFps
 
-from bisos import b
+from bisos.qmail import maildrop
+
+from bisos.b import pyRunAs
+from bisos.common import lines
+
+import enum
 
 
-####+BEGIN: blee:bxPanel:foldingSection :outLevel 0 :sep nil :title "CmndSvcs" :anchor ""  :extraInfo "Command Services Section"
+####+BEGIN: bx:dblock:python:section :title "Enumerations"
+"""
+*  [[elisp:(beginning-of-buffer)][Top]] ############## [[elisp:(blee:ppmm:org-mode-toggle)][Nat]] [[elisp:(delete-other-windows)][(1)]]    *Enumerations*  [[elisp:(org-cycle)][| ]]  [[elisp:(org-show-subtree)][|=]]
+"""
+####+END:
+
+####+BEGIN: bx:dblock:python:enum :enumName "acctAddr_Type" :comment ""
 """ #+begin_org
-*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*     [[elisp:(outline-show-subtree+toggle)][| _CmndSvcs_: |]]  Command Services Section  [[elisp:(org-shifttab)][<)]] E|
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  Enum       [[elisp:(outline-show-subtree+toggle)][||]] /acctAddr_Type/  [[elisp:(org-cycle)][| ]]
+#+end_org """
+@enum.unique
+class acctAddr_Type(enum.Enum):
+####+END:
+    finalDelivery= 'finalDelivery'
+
+
+
+####+BEGIN: bx:cs:py3:section :title "Public Classes"
+""" #+begin_org
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  /Section/    [[elisp:(outline-show-subtree+toggle)][||]] *Public Functions*  [[elisp:(org-cycle)][| ]]
 #+end_org """
 ####+END:
+
+
+####+BEGIN: b:py3:class/decl :className "AcctAddr" :superClass "object" :comment "Abstraction of a dotQmail" :classType "basic"
+""" #+begin_org
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  Cls-basic  [[elisp:(outline-show-subtree+toggle)][||]] /AcctAddr/  superClass=object =Abstraction of a dotQmail=  [[elisp:(org-cycle)][| ]]
+#+end_org """
+class AcctAddr(object):
+####+END:
+    """
+** Abstraction of a dotQmail
+"""
+
+    def __init__(
+            self,
+            qmailAcct,
+            qmailAddr,
+    ):
+
+        self.qmailAcct = qmailAcct
+        self.qmailAddr = qmailAddr
+
+####+BEGIN: b:py3:cs:method/typing :methodName "acctPath" :deco "default"
+    """ #+begin_org
+**  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  Mtd-T-     [[elisp:(outline-show-subtree+toggle)][||]] /acctPath/ deco=default  deco=default  [[elisp:(org-cycle)][| ]]
+    #+end_org """
+    @cs.track(fnLoc=True, fnEntry=True, fnExit=True)
+    def acctPath(
+####+END:
+            self,
+    ) -> pathlib.Path:
+        return pathlib.Path(os.path.expanduser(f'~{self.qmailAcct}'))
+
+####+BEGIN: b:py3:cs:method/typing :methodName "dotQmailFileNameOfAddr" :deco "default"
+    """ #+begin_org
+**  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  Mtd-T-     [[elisp:(outline-show-subtree+toggle)][||]] /dotQmailFileNameOfAddr/ deco=default  deco=default  [[elisp:(org-cycle)][| ]]
+    #+end_org """
+    @cs.track(fnLoc=True, fnEntry=True, fnExit=True)
+    def dotQmailFileNameOfAddr(
+####+END:
+            self,
+    ) -> pathlib.Path:
+        return pathlib.Path(f".qmail-{self.qmailAddr}")
+
+####+BEGIN: b:py3:cs:method/typing :methodName "dotQmailFilePath" :deco "default"
+    """ #+begin_org
+**  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  Mtd-T-     [[elisp:(outline-show-subtree+toggle)][||]] /dotQmailFilePath/ deco=default  deco=default  [[elisp:(org-cycle)][| ]]
+    #+end_org """
+    @cs.track(fnLoc=True, fnEntry=True, fnExit=True)
+    def dotQmailFilePath(
+####+END:
+            self,
+    ) -> pathlib.Path:
+        return (
+            self.acctPath().joinpath(
+               self.dotQmailFileNameOfAddr()
+            )
+        )
+
+####+BEGIN: b:py3:cs:method/typing :methodName "dotQmailFileContentRead" :deco "default"
+    """ #+begin_org
+**  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  Mtd-T-     [[elisp:(outline-show-subtree+toggle)][||]] /dotQmailFileContentRead/ deco=default  deco=default  [[elisp:(org-cycle)][| ]]
+    #+end_org """
+    @cs.track(fnLoc=True, fnEntry=True, fnExit=True)
+    def dotQmailFileContentRead(
+####+END:
+            self,
+    ) -> str:
+        return (
+            pyRunAs.as_root_readFromFile(
+                self.dotQmailFilePath()
+            )
+        )
+
+####+BEGIN: b:py3:cs:method/typing :methodName "dotQmailFileContentWrite" :deco "default"
+    """ #+begin_org
+**  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  Mtd-T-     [[elisp:(outline-show-subtree+toggle)][||]] /dotQmailFileContentWrite/ deco=default  deco=default  [[elisp:(org-cycle)][| ]]
+    #+end_org """
+    @cs.track(fnLoc=True, fnEntry=True, fnExit=True)
+    def dotQmailFileContentWrite(
+####+END:
+            self,
+            content: str,
+    ) -> None:
+        pyRunAs.as_root_writeToFile(
+            self.dotQmailFilePath(),
+            content,
+        )
+        pyRunAs.as_root_osSystem(
+            f"""chown {self.qmailAcct} {self.dotQmailFilePath()}"""
+        )
+        pyRunAs.as_root_osSystem(
+            f"""chmod 600 {self.dotQmailFilePath()}"""
+        )
+        os.system(f"ls -l {self.dotQmailFilePath()}")
+
+####+BEGIN: bx:cs:py3:section :title "Public Functions"
+""" #+begin_org
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  /Section/    [[elisp:(outline-show-subtree+toggle)][||]] *Public Functions*  [[elisp:(org-cycle)][| ]]
+#+end_org """
+####+END:
+
+####+BEGIN: bx:cs:py3:section :title "Common Parameters Specification"
+""" #+begin_org
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  /Section/    [[elisp:(outline-show-subtree+toggle)][||]] *Common Parameters Specification*  [[elisp:(org-cycle)][| ]]
+#+end_org """
+####+END:
+
+####+BEGIN: bx:dblock:python:func :funcName "commonParamsSpecify" :funcType "ParSpec" :retType "" :deco "" :argsList "csParams"
+""" #+begin_org
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  F-ParSpec  [[elisp:(outline-show-subtree+toggle)][||]] /commonParamsSpecify/ retType= argsList=(csParams)  [[elisp:(org-cycle)][| ]]
+#+end_org """
+def commonParamsSpecify(
+    csParams,
+):
+####+END:
+    csParams.parDictAdd(
+        parName='qmailAcct',
+        parDescription="Qmail O/R Account",
+        parDataType=None,
+        parDefault=None,
+        parChoices=["any"],
+        # parScope=icm.CmndParamScope.TargetParam,
+        argparseShortOpt=None,
+        argparseLongOpt='--qmailAcct',
+    )
+    csParams.parDictAdd(
+        parName='qmailAddr',
+        parDescription="Qmail O/R Account Address",
+        parDataType=None,
+        parDefault=None,
+        parChoices=["any"],
+        # parScope=icm.CmndParamScope.TargetParam,
+        argparseShortOpt=None,
+        argparseLongOpt='--qmailAddr',
+    )
 
 
 ####+BEGIN: bx:cs:py3:section :title "CS-Lib Examples"
@@ -124,9 +281,8 @@ from bisos import b
 @cs.track(fnLoc=True, fnEntry=True, fnExit=True)
 def examples_csu(
 ####+END:
-        bpoId: str,
-        envRelPath: str,
-        marmeeBase: typing.Optional[str],
+        qmailAcct: str,
+        qmailAddr: str,
         sectionTitle: typing.AnyStr = "",
 ) -> None:
     """ #+begin_org
@@ -138,79 +294,12 @@ def examples_csu(
     # def execLineEx(cmndStr): cs.examples.execInsert(execLine=cmndStr)
 
     if sectionTitle == "default":
-        cs.examples.menuChapter('*Gmail Config Utilities*')
+        cs.examples.menuChapter('*BxQmail Account And Addrs Utilities*')
 
-    if marmeeBase == None:
-        return
-
-    #cs.examples.menuChapter('*Gmail Config Utilities*')
-
-    cs.examples.menuChapter('*Full Action*')
-
-    icmWrapper = "" ;  cmndName = "marmeeQmailConfig"
-    cps = cpsInit() ;  cmndArgs = "" ;
+    icmWrapper = "" ;  cmndName = "qmailAcctAddr_maildropUpdate"
+    cps = cpsInit() ; cps['qmailAcct'] = qmailAcct ; cps['qmailAddr'] = qmailAddr
+    cmndArgs = qmailAddr
     cs.examples.cmndInsert(cmndName, cps, cmndArgs, verbosity='none', icmWrapper=icmWrapper)
-
-    cs.examples.menuChapter('*Qmail Config*')
-
-    icmWrapper = "" ;  cmndName = "marmeeQmailConfig"
-    cps = cpsInit() ;  cmndArgs = "" ;
-    cs.examples.cmndInsert(cmndName, cps, cmndArgs, verbosity='none', icmWrapper=icmWrapper)
-
-    cs.examples.menuChapter('*Services Activation, Services Manipulation*')
-
-    icmWrapper = "" ;  cmndName = "marmeeQmailRun"
-    cps = cpsInit() ; cmndArgs = "" ;
-    cs.examples.cmndInsert(cmndName, cps, cmndArgs, verbosity='none', icmWrapper=icmWrapper)
-
-    cs.examples.menuChapter('*Here Maildir*')
-
-    icmWrapper = "" ;  cmndName = "marmeeMaildirCreate"
-    cps = cpsInit() ; cps['bpoId'] = bpoId ; cps['envRelPath'] = envRelPath
-    cmndArgs = "main"
-    cs.examples.cmndInsert(cmndName, cps, cmndArgs, verbosity='none', icmWrapper=icmWrapper)
-
-    icmWrapper = "" ;  cmndName = "marmeeHereMaildirVerify"
-    cps = cpsInit() ;  cmndArgs = "" ;
-    cs.examples.cmndInsert(cmndName, cps, cmndArgs, verbosity='none', icmWrapper=icmWrapper)
-
-    icmWrapper = "" ;  cmndName = "marmeeQmailDrop"
-    cps = cpsInit() ; cps['bpoId'] = bpoId ; cps['envRelPath'] = envRelPath
-    cmndArgs = "main postmaster"
-    cs.examples.cmndInsert(cmndName, cps, cmndArgs, verbosity='none', icmWrapper=icmWrapper)
-
-
-####+BEGIN: bx:cs:py3:section :title "CS-Params  --- Place Holder, Empty"
-""" #+begin_org
-*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  /Section/    [[elisp:(outline-show-subtree+toggle)][||]] *CS-Params  --- Place Holder, Empty*  [[elisp:(org-cycle)][| ]]
-#+end_org """
-####+END:
-
-####+BEGIN: blee:bxPanel:foldingSection :outLevel 0 :sep nil :title "Functions" :anchor ""  :extraInfo "maildrop stdout/update"
-""" #+begin_org
-*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*     [[elisp:(outline-show-subtree+toggle)][| _Functions_: |]]  maildrop stdout/update  [[elisp:(org-shifttab)][<)]] E|
-#+end_org """
-####+END:
-
-
-####+BEGIN: b:py3:cs:func/typing :funcName "dotQmailFileUpdate" :funcType "eType" :deco "default"
-""" #+begin_org
-*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  F-T-eType  [[elisp:(outline-show-subtree+toggle)][||]] /dotQmailFileUpdate/  deco=default  [[elisp:(org-cycle)][| ]]
-#+end_org """
-@cs.track(fnLoc=True, fnEntry=True, fnExit=True)
-def dotQmailFileUpdate(
-####+END:
-        destMaildirPath: str,
-        fileName: str,
-) -> None:
-    """ #+begin_org
-** [[elisp:(org-cycle)][| *DocStr* | ] Returns Template As String
-    #+end_org """
-
-    resStr = maildropStr(destMaildirPath)
-    print(resStr)
-
-
 
 
 ####+BEGIN: bx:cs:py3:section :title "CS-Commands"
@@ -219,73 +308,60 @@ def dotQmailFileUpdate(
 #+end_org """
 ####+END:
 
-####+BEGIN: b:py3:cs:cmnd/classHead :cmndName "marmeeQmailDrop" :comment "" :extent "verify" :parsMand "bpoId envRelPath" :argsMin 2 :argsMax 9999 :pyInv ""
+####+BEGIN: b:py3:cs:cmnd/classHead :cmndName "qmailAcctAddr_maildropUpdate" :comment "" :extent "verify" :parsMand "qmailAcct qmailAddr" :argsMin 1 :argsMax 1 :pyInv ""
 """ #+begin_org
-*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  CmndSvc-   [[elisp:(outline-show-subtree+toggle)][||]] <<marmeeQmailDrop>>  =verify= parsMand=bpoId envRelPath argsMin=2 argsMax=9999 ro=cli   [[elisp:(org-cycle)][| ]]
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  CmndSvc-   [[elisp:(outline-show-subtree+toggle)][||]] <<qmailAcctAddr_maildropUpdate>>  =verify= parsMand=qmailAcct qmailAddr argsMin=1 argsMax=1 ro=cli   [[elisp:(org-cycle)][| ]]
 #+end_org """
-class marmeeQmailDrop(cs.Cmnd):
-    cmndParamsMandatory = [ 'bpoId', 'envRelPath', ]
+class qmailAcctAddr_maildropUpdate(cs.Cmnd):
+    cmndParamsMandatory = [ 'qmailAcct', 'qmailAddr', ]
     cmndParamsOptional = [ ]
-    cmndArgsLen = {'Min': 2, 'Max': 9999,}
+    cmndArgsLen = {'Min': 1, 'Max': 1,}
 
     @cs.track(fnLoc=True, fnEntry=True, fnExit=True)
     def cmnd(self,
              rtInv: cs.RtInvoker,
              cmndOutcome: b.op.Outcome,
-             bpoId: typing.Optional[str]=None,  # Cs Mandatory Param
-             envRelPath: typing.Optional[str]=None,  # Cs Mandatory Param
+             qmailAcct: typing.Optional[str]=None,  # Cs Mandatory Param
+             qmailAddr: typing.Optional[str]=None,  # Cs Mandatory Param
              argsList: typing.Optional[list[str]]=None,  # CsArgs
     ) -> b.op.Outcome:
 
-        callParamsDict = {'bpoId': bpoId, 'envRelPath': envRelPath, }
+        callParamsDict = {'qmailAcct': qmailAcct, 'qmailAddr': qmailAddr, }
         if self.invocationValidate(rtInv, cmndOutcome, callParamsDict, argsList).isProblematic():
             return b_io.eh.badOutcome(cmndOutcome)
         cmndArgsSpecDict = self.cmndArgsSpec()
-        bpoId = csParam.mappedValue('bpoId', bpoId)
-        envRelPath = csParam.mappedValue('envRelPath', envRelPath)
+        qmailAcct = csParam.mappedValue('qmailAcct', qmailAcct)
+        qmailAddr = csParam.mappedValue('qmailAddr', qmailAddr)
 ####+END:
         self.cmndDocStr(f""" #+begin_org
-** [[elisp:(org-cycle)][| *CmndDesc:* | ]] arg1 is destintation maildir. arg2-N are addr in ~alias/.qmail-addr.
-        Permissions are fully relaxed in the destination maildir so that user alias can write there.
-        For each entry in ~alias/.qmail-addr we add a line for maildrop.
+** [[elisp:(org-cycle)][| *CmndDesc:* | ]] For dotQmail specified by qmailAcct and qmailAddr, update maildrop to maildropQmailAddr.
+*** Make sure that file corresponing to =maildropQmailAddr= exists.
+*** Read in qmailAcctAddr.
+*** Update maildrop line in qmailAcctAddr file.
+*** -
         #+end_org """)
 
         cmndArgsSpecDict = self.cmndArgsSpec()
-        maildirName = self.cmndArgsGet("0", cmndArgsSpecDict, argsList)
-        qmailAddrs = self.cmndArgsGet("1&9999", cmndArgsSpecDict, argsList)
+        maildropQmailAddr = self.cmndArgsGet("0", cmndArgsSpecDict, argsList)
 
-        # print(f"{maildirName} {qmailAddrs}")
+        qmailAcctAddr = AcctAddr(qmailAcct, qmailAddr)
+        qmailAcctPath = qmailAcctAddr.acctPath()
 
-        runEnvBases = b.pattern.sameInstance(
-            bpoRunBases.BpoRunEnvBases,
-            bpoId,
-            envRelPath,
-        )
-        runEnvBases.basesUpdate()
-        dataBase = runEnvBases.dataBasePath_obtain()
+        maildropRelPath = maildrop.maildropFileName(qmailAddr)
+        maildropPath = qmailAcctPath.joinpath(maildropRelPath)
 
-        maildirFullPath = pathlib.Path(os.path.join(dataBase, 'maildir'))
+        if not maildropPath.exists():
+            print(f"Missing {maildropPath}")
+            return b_io.eh.badOutcome(cmndOutcome)
 
-        os.system(f'chmod -R ugo+rwx {maildirFullPath}')
-        print(f'chmod -R ugo+rwx {maildirFullPath}')
+        maildropLine = f"""| maildrop {maildropRelPath}"""
 
-        destMaildirPath = maildirFullPath.joinpath(maildirName)
+        dotQmailContent = qmailAcctAddr.dotQmailFileContentRead()
+        dotQmailLinesObj = lines.Lines(inContent=dotQmailContent)
+        updatedDotQmailLines = dotQmailLinesObj.addIfNotThere(maildropLine)
 
-        aliasBasePath = pathlib.Path(os.path.expanduser('~alias'))
-
-        for eachQmailAddr in qmailAddrs:
-            for eachDotQmail in aliasBasePath.iterdir():
-                if eachDotQmail.name.startswith(f".qmail-{eachQmailAddr}"):
-                    print(f"{eachDotQmail.name}")
-                    if not (resStr := b.subProc.WOpW(invedBy=self, log=0).bash(
-                        f"""sudo cat  {eachDotQmail}""",
-                    ).stdout):  return(b_io.eh.badOutcome(cmndOutcome))
-                    print(resStr)
-                    if not str(destMaildirPath) in resStr:
-                        print(f"NOTYET Write {destMaildirPath}")
-                    resStr = maildropStr(destMaildirPath)
-                    print(resStr)
-                    break
+        updatedDotQmailContent = '\n'.join(updatedDotQmailLines)
+        qmailAcctAddr.dotQmailFileContentWrite(updatedDotQmailContent)
 
         return(cmndOutcome)
 
@@ -304,15 +380,9 @@ class marmeeQmailDrop(cs.Cmnd):
         cmndArgsSpecDict = cs.arg.CmndArgsSpecDict()
         cmndArgsSpecDict.argsDictAdd(
             argPosition="0",
-            argName="maildirName",
+            argName="maildropQmailAddr",
             argChoices=[],
-            argDescription="Maildir Name"
-        )
-        cmndArgsSpecDict.argsDictAdd(
-            argPosition="1&9999",
-            argName="qmailAddrs",
-            argChoices=[],
-            argDescription="qmail Addresses"
+            argDescription="Maildrop File Identifier"
         )
         return cmndArgsSpecDict
 
