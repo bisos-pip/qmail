@@ -1,4 +1,4 @@
-#!/bin/env python
+#!/bisos/venv/py3/dev-bisos3/bin/python
 # -*- coding: utf-8 -*-
 
 """ #+begin_org
@@ -184,8 +184,11 @@ class examples(cs.Cmnd):
 
         bleep.examples_icmBasic()
 
+        cs.examples.menuChapter('*Qmail Remote From Stdin*')
+
         myName = cs.G.icmMyName()
         execLineEx(f"""{myName} gmail.com mohsen.byname@gmail.com  mohsen.byname@gmail.com < ~/example.mail""")
+        execLineEx(f"""sudo -u qmailr {myName} gmail.com mohsen.byname@gmail.com  mohsen.byname@gmail.com < ~/example.mail""")
         execLineEx(f"""{myName} one two < /etc/motd""")
         execLineEx(f"""ls -t /tmp/* | head -20 | grep qmail-remote- | head -1""")        
         execLineEx(f"""sudo cat $(ls -t /tmp/* | head -20 | grep qmail-remote- | head -1)""")        
@@ -255,6 +258,9 @@ The envelope sender address is listed as _sender_ (~argsList[1]~).
 
 
     body = sys.stdin.read()
+
+    uid = os.getuid()
+    pid = os.getpid()
 
     fd, tmpPath = tempfile.mkstemp(suffix=".mail", prefix="qmail-remote-")
     try:
@@ -332,7 +338,8 @@ The envelope sender address is listed as _sender_ (~argsList[1]~).
     address = outMailFps.fps_getParam('outMail_smtpServer').parValueGet()
     port = outMailFps.fps_getParam('outMail_port').parValueGet()
     use_ssl = outMailFps.fps_getParam('outMail_useSsl').parValueGet()
-    use_tls = outMailFps.fps_getParam('outMail_useTls').parValueGet()
+    #use_tls = outMailFps.fps_getParam('outMail_useTls').parValueGet()
+    use_tls = "False"
 
     if use_ssl == "True": use_ssl = True
     if use_ssl == "False": use_ssl = False
@@ -432,10 +439,9 @@ def sender(
     out("OAUTH2")
     zero()
 
-
-####+BEGIN: bx:icm:py3:section :title "Functions: out,zero,temp_dns,temp_control"
+####+BEGIN: b:py3:cs:orgItem/basic :type "=PurePy=    " :title "*Functions: out,zero,temp_dns,temp_control*" :comment "Taken from C Sources"
 """ #+begin_org
-*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  /Section/    [[elisp:(outline-show-subtree+toggle)][||]] *Functions: out,zero,temp_dns,temp_control*  [[elisp:(org-cycle)][| ]]
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  =PurePy=    [[elisp:(outline-show-subtree+toggle)][||]] *Functions: out,zero,temp_dns,temp_control* Taken from C Src  [[elisp:(org-cycle)][| ]]
 #+end_org """
 ####+END:
 
@@ -507,19 +513,22 @@ Sorry. Although I'm listed as a best-preference MX or A for that host,\n\
 it isn't in my control/locals file, so I don't treat it as local. (#5.4.6)\n");
     zerodie()
 
-####+BEGIN: bx:icm:py3:section :title "Functions: outsmtptext"
+####+BEGIN: b:py3:cs:func/typing :funcName "outsmtptext" :funcType "extTyp" :deco "track" :comment "Incomplete"
 """ #+begin_org
-*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  /Section/    [[elisp:(outline-show-subtree+toggle)][||]] *Functions: outsmtptext*  [[elisp:(org-cycle)][| ]]
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  F-T-extTyp [[elisp:(outline-show-subtree+toggle)][||]] /outsmtptext/  Incomplete deco=track  [[elisp:(org-cycle)][| ]]
 #+end_org """
+@cs.track(fnLoc=True, fnEntry=True, fnExit=True)
+def outsmtptext(
 ####+END:
-
-def outsmtptext():
+) -> None:
+    """ #+begin_org
+** [[elisp:(org-cycle)][| *DocStr | ] Place Holder
+    #+end_org """
     out("KRemote host said: ")
     #out("NotYet: Somthing like: 250 ok 1495256578 qp 14280")
     out("250 ok --And more Text Comes Here")
     zero()
 
-    
 ####+BEGIN: b:py3:cs:framework/main :csInfo "csInfo" :noCmndEntry "noCmndProcessor" :extraParamsHook "g_extraParams" :importedCmndsModules "g_importedCmndsModules"
 """ #+begin_org
 *  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  CsFrmWrk   [[elisp:(outline-show-subtree+toggle)][||]] =g_csMain= (csInfo, _noCmndProcessor_, g_extraParams, g_importedCmndsModules)
