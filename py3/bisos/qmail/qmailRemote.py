@@ -1,19 +1,18 @@
-#!/bisos/venv/py3/dev-bisos3/bin/python
 # -*- coding: utf-8 -*-
 
 """ #+begin_org
-* ~[Summary]~ :: A replacement module for qmail-remote with a complete Python SMTP implementation.
+* ~[Summary]~ :: A =CS-Lib= for InMail Abstracted Accessible Service (aas) Offline Imap.
 #+end_org """
 
-####+BEGIN: b:py3:cs:file/dblockControls :classification "cs-mu"
+####+BEGIN: b:py3:cs:file/dblockControls :classification "cs-u"
 """ #+begin_org
-* [[elisp:(org-cycle)][| /Control Parameters Of This File/ |]] :: dblk ctrls classifications=cs-mu
+* [[elisp:(org-cycle)][| /Control Parameters Of This File/ |]] :: dblk ctrls classifications=cs-u
 #+BEGIN_SRC emacs-lisp
 (setq-local b:dblockControls t) ; (setq-local b:dblockControls nil)
-(put 'b:dblockControls 'py3:cs:Classification "cs-mu") ; one of cs-mu, cs-u, cs-lib, bpf-lib, pyLibPure
+(put 'b:dblockControls 'py3:cs:Classification "cs-u") ; one of cs-mu, cs-u, cs-lib, bpf-lib, pyLibPure
 #+END_SRC
 #+RESULTS:
-: cs-mu
+: cs-u
 #+end_org """
 ####+END:
 
@@ -29,27 +28,29 @@
 ####+BEGIN: b:prog:file/particulars :authors ("./inserts/authors-mb.org")
 """ #+begin_org
 * *[[elisp:(org-cycle)][| Particulars |]]* :: Authors, version
-** This File: /bisos/git/auth/bxRepos/bisos-pip/marmee/py3/bin/qmail-remote.cs
+** This File: /bisos/git/auth/bxRepos/bisos-pip/qmail/py3/bisos/qmail/qmailRemote.py
 ** Authors: Mohsen BANAN, http://mohsen.banan.1.byname.net/contact
 #+end_org """
 ####+END:
 
-####+BEGIN: b:py3:file/particulars-csInfo :status "inUse"
+####+BEGIN: b:python:file/particulars-csInfo :status "inUse"
 """ #+begin_org
 * *[[elisp:(org-cycle)][| Particulars-csInfo |]]*
 #+end_org """
+
 import typing
-csInfo: typing.Dict[str, typing.Any] = { 'moduleName': ['qmail-remote'], }
-csInfo['version'] = '202210150153'
+csInfo: typing.Dict[str, typing.Any] = { 'moduleName': ['qmailRemote'], }
+csInfo['version'] = '202212122335'
 csInfo['status']  = 'inUse'
-csInfo['panel'] = 'qmail-remote-Panel.org'
+csInfo['panel'] = 'qmailRemote-Panel.org'
 csInfo['groupingType'] = 'IcmGroupingType-pkged'
 csInfo['cmndParts'] = 'IcmCmndParts[common] IcmCmndParts[param]'
 ####+END:
 
-""" #+begin_org
-* [[elisp:(org-cycle)][| ~Description~ |]] :: A replacement module for qmail-remote
+csInfo['description'] = """ #+begin_org
+* /[[elisp:(org-cycle)][| Description |]]/ :: [[file:/bisos/git/auth/bxRepos/blee-binders/bisos-core/COMEEGA/_nodeBase_/fullUsagePanel-en.org][BISOS COMEEGA Panel]]
 Module description comes here.
+** Relevant Panels:
 ** Status: In use with blee3
 ** /[[elisp:(org-cycle)][| Planned Improvements |]]/ :
 *** TODO complete fileName in particulars.
@@ -62,11 +63,12 @@ Module description comes here.
 #+end_org """
 ####+END:
 
-####+BEGIN: b:py3:file/workbench :outLevel 1
+####+BEGIN: b:python:file/workbench :outLevel 1
 """ #+begin_org
 * [[elisp:(org-cycle)][| Workbench |]] :: [[elisp:(python-check (format "/bisos/venv/py3/bisos3/bin/python -m pyclbr %s" (bx:buf-fname))))][pyclbr]] || [[elisp:(python-check (format "/bisos/venv/py3/bisos3/bin/python -m pydoc ./%s" (bx:buf-fname))))][pydoc]] || [[elisp:(python-check (format "/bisos/pipx/bin/pyflakes %s" (bx:buf-fname)))][pyflakes]] | [[elisp:(python-check (format "/bisos/pipx/bin/pychecker %s" (bx:buf-fname))))][pychecker (executes)]] | [[elisp:(python-check (format "/bisos/pipx/bin/pycodestyle %s" (bx:buf-fname))))][pycodestyle]] | [[elisp:(python-check (format "/bisos/pipx/bin/flake8 %s" (bx:buf-fname))))][flake8]] | [[elisp:(python-check (format "/bisos/pipx/bin/pylint %s" (bx:buf-fname))))][pylint]]  [[elisp:(org-cycle)][| ]]
 #+end_org """
 ####+END:
+
 
 ####+BEGIN: b:py3:cs:orgItem/basic :type "=PyImports= " :title "*Py Library IMPORTS*" :comment "-- with classification based framework/imports"
 """ #+begin_org
@@ -76,7 +78,7 @@ Module description comes here.
 
 ####+BEGIN: b:py3:cs:framework/imports :basedOn "classification"
 """ #+begin_org
-** Imports Based On Classification=cs-mu
+** Imports Based On Classification=cs-u
 #+end_org """
 from bisos import b
 from bisos.b import cs
@@ -85,7 +87,24 @@ from bisos.b import b_io
 import collections
 ####+END:
 
+import collections
+
+import collections
+import pathlib
 import os
+#import shutil
+
+from bisos.bpo import bpoRunBases
+from bisos.bpo import bpo
+
+from bisos.common import csParam
+
+#from bisos.marmee import aasInMailControl
+from bisos.marmee import aasInMailFps
+from bisos.marmee import aasOutMailFps
+from bisos.marmee import x822Out
+
+from bisos.marmee import gmailOauth2
 
 import sys
 from email.parser import Parser
@@ -93,6 +112,8 @@ from email.utils import parseaddr, getaddresses
 from os.path import expanduser
 from configparser import ConfigParser
 from collections import namedtuple
+
+from email.message import EmailMessage
 
 import smtplib
 import http
@@ -105,42 +126,66 @@ import base64
 import tempfile
 
 
+####+BEGIN: blee:bxPanel:foldingSection :outLevel 0 :sep nil :title "CmndSvcs" :anchor ""  :extraInfo "Command Services Section"
 """ #+begin_org
-*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  CsFrmWrk   [[elisp:(outline-show-subtree+toggle)][||]] ~csuList emacs-list Specifications~  [[elisp:(blee:org:code-block/above-run)][ /Eval Below/ ]] [[elisp:(org-cycle)][| ]]
-#+BEGIN_SRC emacs-lisp
-(setq  b:py:cs:csuList
-  (list
-   "bisos.b.cs.ro"
-   "blee.icmPlayer.bleep"
-   "bisos.marmee.gmailOauth2"
-   "bisos.marmee.aasOutMailFps"
- ))
-#+END_SRC
-#+RESULTS:
-| bisos.b.cs.ro | blee.icmPlayer.bleep | bisos.marmee.gmailOauth2 | bisos.marmee.aasOutMailFps |
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*     [[elisp:(outline-show-subtree+toggle)][| _CmndSvcs_: |]]  Command Services Section  [[elisp:(org-shifttab)][<)]] E|
 #+end_org """
-
-####+BEGIN: b:py3:cs:framework/csuListProc :pyImports t :csuImports t :csuParams t
-""" #+begin_org
-*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  CsFrmWrk   [[elisp:(outline-show-subtree+toggle)][||]] =Process CSU List= with /4/ in csuList pyImports=t csuImports=t csuParams=t
-#+end_org """
-
-from bisos.b.cs import ro
-from blee.icmPlayer import bleep
-from bisos.marmee import gmailOauth2
-from bisos.marmee import aasOutMailFps
-
-
-csuList = [ 'bisos.b.cs.ro', 'blee.icmPlayer.bleep', 'bisos.marmee.gmailOauth2', 'bisos.marmee.aasOutMailFps', ]
-
-g_importedCmndsModules = cs.csuList_importedModules(csuList)
-
-def g_extraParams():
-    csParams = cs.param.CmndParamDict()
-    cs.csuList_commonParamsSpecify(csuList, csParams)
-    cs.argsparseBasedOnCsParams(csParams)
-
 ####+END:
+
+
+####+BEGIN: bx:cs:py3:section :title "CS-Lib Examples"
+""" #+begin_org
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  /Section/    [[elisp:(outline-show-subtree+toggle)][||]] *CS-Lib Examples*  [[elisp:(org-cycle)][| ]]
+#+end_org """
+####+END:
+
+####+BEGIN: b:py3:cs:func/typing :funcName "examples_csu" :funcType "eType" :retType "" :deco "default" :argsList ""
+""" #+begin_org
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  F-T-eType  [[elisp:(outline-show-subtree+toggle)][||]] /examples_csu/  deco=default  [[elisp:(org-cycle)][| ]]
+#+end_org """
+@cs.track(fnLoc=True, fnEntry=True, fnExit=True)
+def examples_csu(
+####+END:
+        sectionTitle: typing.AnyStr = "",
+) -> None:
+    """ #+begin_org
+** [[elisp:(org-cycle)][| *DocStr | ] Examples of Service Access Instance Commands.
+    #+end_org """
+
+    #def cpsInit(): return collections.OrderedDict()
+    #def menuItem(verbosity): cs.examples.cmndInsert(cmndName, cps, cmndArgs, verbosity=verbosity) # 'little' or 'none'
+    def execLineEx(cmndStr): cs.examples.execInsert(execLine=cmndStr)
+
+    if sectionTitle == "default":
+        cs.examples.menuChapter('*Qmail Remote From Stdin*')
+
+    myName = cs.G.icmMyName()
+    execLineEx(f"""{myName} gmail.com mohsen.byname@gmail.com  mohsen.byname@gmail.com < ~/example.mail""")
+    execLineEx(f"""sudo -u qmailr {myName} gmail.com mohsen.byname@gmail.com  mohsen.byname@gmail.com < ~/example.mail""")
+    execLineEx(f"""{myName} one two < /etc/motd""")
+    execLineEx(f"""ls -t /tmp/* | head -20 | grep qmail-remote- | head -1""")
+    execLineEx(f"""sudo cat $(ls -t /tmp/* | head -20 | grep qmail-remote- | head -1)""")
+
+
+####+BEGIN: bx:cs:py3:section :title "CS-Params  --- Place Holder, Empty"
+""" #+begin_org
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  /Section/    [[elisp:(outline-show-subtree+toggle)][||]] *CS-Params  --- Place Holder, Empty*  [[elisp:(org-cycle)][| ]]
+#+end_org """
+####+END:
+
+####+BEGIN: blee:bxPanel:foldingSection :outLevel 0 :sep nil :title "Functions" :anchor ""  :extraInfo "maildrop stdout/update"
+""" #+begin_org
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*     [[elisp:(outline-show-subtree+toggle)][| _Functions_: |]]  maildrop stdout/update  [[elisp:(org-shifttab)][<)]] E|
+#+end_org """
+####+END:
+
+
+####+BEGIN: bx:cs:py3:section :title "CS-Commands"
+""" #+begin_org
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  /Section/    [[elisp:(outline-show-subtree+toggle)][||]] *CS-Commands*  [[elisp:(org-cycle)][| ]]
+#+end_org """
+####+END:
+
 
 Oauth = namedtuple(
     "Oauth", "request_url, client_id, client_secret, username, user_refresh_token"
@@ -148,86 +193,6 @@ Oauth = namedtuple(
 Account = namedtuple(
     "Account", "username, refresh_token, address, port, use_ssl, use_tls"
 )
-
-
-####+BEGIN: b:py3:cs:cmnd/classHead :cmndName "examples" :cmndType ""  :comment "FrameWrk: ICM Examples" :parsMand "" :parsOpt "" :argsMin 0 :argsMax 0 :pyInv ""
-""" #+begin_org
-*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  CmndSvc-   [[elisp:(outline-show-subtree+toggle)][||]] <<examples>>  *FrameWrk: ICM Examples*  =verify= ro=cli   [[elisp:(org-cycle)][| ]]
-#+end_org """
-class examples(cs.Cmnd):
-    cmndParamsMandatory = [ ]
-    cmndParamsOptional = [ ]
-    cmndArgsLen = {'Min': 0, 'Max': 0,}
-
-    @cs.track(fnLoc=True, fnEntry=True, fnExit=True)
-    def cmnd(self,
-             rtInv: cs.RtInvoker,
-             cmndOutcome: b.op.Outcome,
-    ) -> b.op.Outcome:
-        """FrameWrk: ICM Examples"""
-        callParamsDict = {}
-        if self.invocationValidate(rtInv, cmndOutcome, callParamsDict, None).isProblematic():
-            return b_io.eh.badOutcome(cmndOutcome)
-####+END:
-        cmndOutcome = self.getOpOutcome()
-        # def cpsInit(): return collections.OrderedDict()
-        # def menuItem(verbosity): cs.examples.cmndInsert(cmndName, cps, cmndArgs, verbosity=verbosity) # 'little' or 'none'
-        # def extMenuItem(verbosity): cs.examples.cmndInsert(cmndName, cps, cmndArgs, icmName=icmExName, verbosity=verbosity) # 'little' or 'none'
-        def execLineEx(cmndStr): cs.examples.execInsert(execLine=cmndStr)
-
-        #logControler = b_io.log.Control()
-        #logControler.loggerSetLevel(20)
-
-        cs.examples.myName(cs.G.icmMyName(), cs.G.icmMyFullName())
-
-        cs.examples.commonBrief()
-
-        bleep.examples_icmBasic()
-
-        cs.examples.menuChapter('*Qmail Remote From Stdin*')
-
-        myName = cs.G.icmMyName()
-        execLineEx(f"""{myName} gmail.com mohsen.byname@gmail.com  mohsen.byname@gmail.com < ~/example.mail""")
-        execLineEx(f"""sudo -u qmailr {myName} gmail.com mohsen.byname@gmail.com  mohsen.byname@gmail.com < ~/example.mail""")
-        execLineEx(f"""{myName} one two < /etc/motd""")
-        execLineEx(f"""ls -t /tmp/* | head -20 | grep qmail-remote- | head -1""")        
-        execLineEx(f"""sudo cat $(ls -t /tmp/* | head -20 | grep qmail-remote- | head -1)""")        
-
-        return(cmndOutcome)
-
-####+BEGIN: b:py3:cs:cmnd/classHead :cmndName "noCmndProcessor" :cmndType ""  :comment "No Cmnds Dispatch" :parsMand "" :parsOpt "" :argsMin 0 :argsMax 4 :pyInv ""
-""" #+begin_org
-*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  CmndSvc-   [[elisp:(outline-show-subtree+toggle)][||]] <<noCmndProcessor>>  *No Cmnds Dispatch*  =verify= argsMax=4 ro=cli   [[elisp:(org-cycle)][| ]]
-#+end_org """
-class noCmndProcessor(cs.Cmnd):
-    cmndParamsMandatory = [ ]
-    cmndParamsOptional = [ ]
-    cmndArgsLen = {'Min': 0, 'Max': 4,}
-
-    @cs.track(fnLoc=True, fnEntry=True, fnExit=True)
-    def cmnd(self,
-             rtInv: cs.RtInvoker,
-             cmndOutcome: b.op.Outcome,
-             argsList: typing.Optional[list[str]]=None,  # CsArgs
-    ) -> b.op.Outcome:
-        """No Cmnds Dispatch"""
-        callParamsDict = {}
-        if self.invocationValidate(rtInv, cmndOutcome, callParamsDict, argsList).isProblematic():
-            return b_io.eh.badOutcome(cmndOutcome)
-        cmndArgsSpecDict = self.cmndArgsSpec()
-####+END:
-        """ #+begin_org
-** [[elisp:(org-cycle)][| *DocStr | ] Dispatch examples cmnd when nor args, otherwiseprocess args as qmail-remote does.
-        #+end_org """
-
-        if argsList:
-            #print(f"argsList={argsList}")
-            qmailRemote(argsList)
-        else:
-            examples().cmnd(rtInv, cmndOutcome)
-
-        return(cmndOutcome)
-
 
 ####+BEGIN: b:py3:cs:func/typing :funcName "record_inMail" :funcType "ExtTyp" :deco "track"
 """ #+begin_org
@@ -282,7 +247,6 @@ def record_outMsg(
         pass
 
 
-
 ####+BEGIN: b:py3:cs:func/typing :funcName "qmailRemote" :funcType "ExtTyp" :deco "track"
 """ #+begin_org
 *  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  F-T-ExtTyp [[elisp:(outline-show-subtree+toggle)][||]] /qmailRemote/  deco=track  [[elisp:(org-cycle)][| ]]
@@ -330,6 +294,20 @@ The envelope sender address is listed as _sender_ (~argsList[1]~).
     email_parser = Parser()
     msg = email_parser.parsestr(body)
 
+
+####+BEGIN: b:py3:cs:func/typing :funcName "qmailRemoteWithMsg" :funcType "ExtTyp" :deco "track"
+""" #+begin_org
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  F-T-ExtTyp [[elisp:(outline-show-subtree+toggle)][||]] /qmailRemoteWithMsg/  deco=track  [[elisp:(org-cycle)][| ]]
+#+end_org """
+@cs.track(fnLoc=True, fnEntry=True, fnExit=True)
+def qmailRemoteWithMsg(
+####+END:
+        msg: EmailMessage,
+) -> None:
+    """#+begin_org
+** [[elisp:(org-cycle)][| *DocStr | ] This =qmailRemote= is a plugin replacement (a wrapper) for qmail-remote.
+    #+end_org """
+
     tos = list()
     ccs = list()
     bccs = list()
@@ -373,9 +351,15 @@ The envelope sender address is listed as _sender_ (~argsList[1]~).
     )
 
     request_url = "https://accounts.google.com/o/oauth2/token"
-    client_id = credsFps.fps_getParam('googleCreds_client_id').parValueGet()
-    client_secret = credsFps.fpCrypt_getParam('googleCreds_client_secret').parValueGet().decode("utf-8")
-    refresh_token = credsFps.fpCrypt_getParam('googleCreds_refresh_token').parValueGet().decode("utf-8")
+
+    # client_id = credsFps.fps_getParam('googleCreds_client_id').parValueGet()
+    # client_secret = credsFps.fpCrypt_getParam('googleCreds_client_secret').parValueGet().decode("utf-8")
+    # refresh_token = credsFps.fpCrypt_getParam('googleCreds_refresh_token').parValueGet().decode("utf-8")
+
+    client_id = msg['X-Oauth2-Client-Id']
+    client_secret = msg['X-Oauth2-Client-Secret']
+    refresh_token = msg['X-Oauth2-Refresh-Token']
+
 
     userName = outMailFps.fps_getParam('outMail_userName').parValueGet()
     address = outMailFps.fps_getParam('outMail_smtpServer').parValueGet()
@@ -403,9 +387,9 @@ The envelope sender address is listed as _sender_ (~argsList[1]~).
     #sender(fromaddr, tos + ccs + bccs, msg, oauth, acct, args.debug)
     #sender(arg_sender, tos + ccs + bccs, msg, oauth, acct)
 
-    # x822out.clean(msg)
 
-    sender(arg_sender, argsList, msg, oauth, acct)
+    #sender(arg_sender, argsList, msg, oauth, acct)
+    sender(msg['From'], msg['To'], msg, oauth, acct)
 
 
 
@@ -457,13 +441,14 @@ def sender(
 ** [[elisp:(org-cycle)][| *DocStr | ] submissionStaged envlpOriginator, envlpRecipients, msg
     #+end_org """
 
+    x822Out.mailHeadersPipelineClean(msg)
 
     record_outMsg(msg)
 
-    out("KSubmission Faked: ")
-    zero()
 
-    return
+    #out("KSubmission Faked: ")
+    #zero()
+
 
     if acct.use_ssl:
         server = smtplib.SMTP_SSL(host=acct.address, port=acct.port)
@@ -480,7 +465,7 @@ def sender(
     auth = oauth_handler(oauth)
     server.docmd("AUTH", "XOAUTH2 %s" % auth)
 
-    #server.sendmail(fromaddr, toaddrs, msg.as_string())
+    server.sendmail(fromaddr, toaddrs, msg.as_string())
 
     server.quit()
 
@@ -494,7 +479,7 @@ def sender(
 
 ####+BEGIN: b:py3:cs:orgItem/basic :type "=PurePy=    " :title "*Functions: out,zero,temp_dns,temp_control*" :comment "Taken from C Sources"
 """ #+begin_org
-*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  =PurePy=    [[elisp:(outline-show-subtree+toggle)][||]] *Functions: out,zero,temp_dns,temp_control* Taken from C Src  [[elisp:(org-cycle)][| ]]
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  =PurePy=     [[elisp:(outline-show-subtree+toggle)][||]] *Functions: out,zero,temp_dns,temp_control* Taken from C Sources  [[elisp:(org-cycle)][| ]]
 #+end_org """
 ####+END:
 
@@ -581,21 +566,6 @@ def outsmtptext(
     #out("NotYet: Somthing like: 250 ok 1495256578 qp 14280")
     out("250 ok --And more Text Comes Here")
     zero()
-
-####+BEGIN: b:py3:cs:framework/main :csInfo "csInfo" :noCmndEntry "noCmndProcessor" :extraParamsHook "g_extraParams" :importedCmndsModules "g_importedCmndsModules"
-""" #+begin_org
-*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  CsFrmWrk   [[elisp:(outline-show-subtree+toggle)][||]] =g_csMain= (csInfo, _noCmndProcessor_, g_extraParams, g_importedCmndsModules)
-#+end_org """
-
-if __name__ == '__main__':
-    cs.main.g_csMain(
-        csInfo=csInfo,
-        noCmndEntry=noCmndProcessor,  # specify a Cmnd name
-        extraParamsHook=g_extraParams,
-        importedCmndsModules=g_importedCmndsModules,
-    )
-
-####+END:
 
 ####+BEGIN: b:py3:cs:framework/endOfFile :basedOn "classification"
 """ #+begin_org
