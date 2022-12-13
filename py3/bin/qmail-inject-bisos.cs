@@ -1,6 +1,7 @@
 #!/bisos/venv/py3/dev-bisos3/bin/python
 # -*- coding: utf-8 -*-
 
+
 """ #+begin_org
 * ~[Summary]~ :: qmail-inject-bisos.cs is a pre-processor for qmail-inject which pairs up with qmail-remote-bisos.cs
 #+end_org """
@@ -109,6 +110,7 @@ import tempfile
 
 from bisos.marmee import aasMailFps
 
+
 """ #+begin_org
 *  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  CsFrmWrk   [[elisp:(outline-show-subtree+toggle)][||]] ~csuList emacs-list Specifications~  [[elisp:(blee:org:code-block/above-run)][ /Eval Below/ ]] [[elisp:(org-cycle)][| ]]
 #+BEGIN_SRC emacs-lisp
@@ -118,24 +120,28 @@ from bisos.marmee import aasMailFps
    "blee.icmPlayer.bleep"
    "bisos.marmee.gmailOauth2"
    "bisos.marmee.aasOutMailFps"
+   "bisos.qmail.qmailInject"
+   "bisos.qmail.qmailRemote"
  ))
 #+END_SRC
 #+RESULTS:
-| bisos.b.cs.ro | blee.icmPlayer.bleep | bisos.marmee.gmailOauth2 | bisos.marmee.aasOutMailFps |
+| bisos.b.cs.ro | blee.icmPlayer.bleep | bisos.marmee.gmailOauth2 | bisos.marmee.aasOutMailFps | bisos.qmail.qmailInject | bisos.qmail.qmailRemote |
 #+end_org """
 
 ####+BEGIN: b:py3:cs:framework/csuListProc :pyImports t :csuImports t :csuParams t
 """ #+begin_org
-*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  CsFrmWrk   [[elisp:(outline-show-subtree+toggle)][||]] =Process CSU List= with /4/ in csuList pyImports=t csuImports=t csuParams=t
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  CsFrmWrk   [[elisp:(outline-show-subtree+toggle)][||]] =Process CSU List= with /6/ in csuList pyImports=t csuImports=t csuParams=t
 #+end_org """
 
 from bisos.b.cs import ro
 from blee.icmPlayer import bleep
 from bisos.marmee import gmailOauth2
 from bisos.marmee import aasOutMailFps
+from bisos.qmail import qmailInject
+from bisos.qmail import qmailRemote
 
 
-csuList = [ 'bisos.b.cs.ro', 'blee.icmPlayer.bleep', 'bisos.marmee.gmailOauth2', 'bisos.marmee.aasOutMailFps', ]
+csuList = [ 'bisos.b.cs.ro', 'blee.icmPlayer.bleep', 'bisos.marmee.gmailOauth2', 'bisos.marmee.aasOutMailFps', 'bisos.qmail.qmailInject', 'bisos.qmail.qmailRemote', ]
 
 g_importedCmndsModules = cs.csuList_importedModules(csuList)
 
@@ -145,14 +151,6 @@ def g_extraParams():
     cs.argsparseBasedOnCsParams(csParams)
 
 ####+END:
-
-Oauth = namedtuple(
-    "Oauth", "request_url, client_id, client_secret, username, user_refresh_token"
-)
-Account = namedtuple(
-    "Account", "username, refresh_token, address, port, use_ssl, use_tls"
-)
-
 
 ####+BEGIN: b:py3:cs:cmnd/classHead :cmndName "examplesNOT" :cmndType ""  :comment "FrameWrk: ICM Examples" :parsMand "" :parsOpt "" :argsMin 0 :argsMax 0 :pyInv ""
 """ #+begin_org
@@ -188,18 +186,8 @@ class examples(cs.Cmnd):
 
         bleep.examples_icmBasic()
 
-        cs.examples.menuChapter('*Qmail Inject From Stdin*')
-
-        myName = cs.G.icmMyName()
-        execLineEx(f"""{myName} -- -n < ~/example.mail""")
-        execLineEx(f"""ls -t /tmp/* | head -20 | grep qmail-inject- | head -1""")
-        execLineEx(f"""sudo cat $(ls -t /tmp/* | head -20 | grep qmail-inject- | head -1)""")
-
-        cmndName = "qmailInjectCmnd" ;  cmndArgs = "-- -n"
-        cps=cpsInit(); cps['runMode'] = "runDebug"
-        menuItem(verbosity='none', icmWrapper="cat ~/example.mail | ")
-        menuItem(verbosity='full', icmWrapper="cat ~/example.mail | ")
-
+        qmailInject.examples_csu(sectionTitle="default")
+        qmailRemote.examples_csu(sectionTitle="default")
 
         return(cmndOutcome)
 
@@ -233,180 +221,15 @@ class noCmndProcessor(cs.Cmnd):
 
         if mailInput:
             qmailInject(mailInput, argsList)
+            # qmailInject.prepAndQmailRemote().cmnd(rtInv, cmndOutcome,
+            #                                       argsList=argsList,
+            #                                       mailInput=mailInput,
+            #                                       )
+
         else:
              examples().cmnd(rtInv, cmndOutcome)
 
         return(cmndOutcome)
-
-
-####+BEGIN: b:py3:cs:cmnd/classHead :cmndName "prepAndQmailInject" :cmndType ""  :comment "Inject as a cmnd" :parsMand "" :parsOpt "" :argsMin 0 :argsMax 9999 :pyInv ""
-""" #+begin_org
-*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  CmndSvc-   [[elisp:(outline-show-subtree+toggle)][||]] <<prepAndQmailInject>>  *Inject as a cmnd*  =verify= argsMax=9999 ro=cli   [[elisp:(org-cycle)][| ]]
-#+end_org """
-class prepAndQmailInject(cs.Cmnd):
-    cmndParamsMandatory = [ ]
-    cmndParamsOptional = [ ]
-    cmndArgsLen = {'Min': 0, 'Max': 9999,}
-
-    @cs.track(fnLoc=True, fnEntry=True, fnExit=True)
-    def cmnd(self,
-             rtInv: cs.RtInvoker,
-             cmndOutcome: b.op.Outcome,
-             argsList: typing.Optional[list[str]]=None,  # CsArgs
-    ) -> b.op.Outcome:
-        """Inject as a cmnd"""
-        callParamsDict = {}
-        if self.invocationValidate(rtInv, cmndOutcome, callParamsDict, argsList).isProblematic():
-            return b_io.eh.badOutcome(cmndOutcome)
-        cmndArgsSpecDict = self.cmndArgsSpec()
-####+END:
-        """ #+begin_org
-** [[elisp:(org-cycle)][| *DocStr | ] Interface to qmailInject but through a cmnd
-        #+end_org """
-
-        mailInput = b_io.stdin.read()
-        qmailInject(mailInput, argsList)
-
-        return(cmndOutcome)
-
-####+BEGIN: b:py3:cs:cmnd/classHead :cmndName "prepAndQmailRemote" :cmndType ""  :comment "Inject as a cmnd" :parsMand "" :parsOpt "" :argsMin 0 :argsMax 9999 :pyInv ""
-""" #+begin_org
-*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  CmndSvc-   [[elisp:(outline-show-subtree+toggle)][||]] <<prepAndQmailRemote>>  *Inject as a cmnd*  =verify= argsMax=9999 ro=cli   [[elisp:(org-cycle)][| ]]
-#+end_org """
-class prepAndQmailRemote(cs.Cmnd):
-    cmndParamsMandatory = [ ]
-    cmndParamsOptional = [ ]
-    cmndArgsLen = {'Min': 0, 'Max': 9999,}
-
-    @cs.track(fnLoc=True, fnEntry=True, fnExit=True)
-    def cmnd(self,
-             rtInv: cs.RtInvoker,
-             cmndOutcome: b.op.Outcome,
-             argsList: typing.Optional[list[str]]=None,  # CsArgs
-    ) -> b.op.Outcome:
-        """Inject as a cmnd"""
-        callParamsDict = {}
-        if self.invocationValidate(rtInv, cmndOutcome, callParamsDict, argsList).isProblematic():
-            return b_io.eh.badOutcome(cmndOutcome)
-        cmndArgsSpecDict = self.cmndArgsSpec()
-####+END:
-        """ #+begin_org
-** [[elisp:(org-cycle)][| *DocStr | ] Interface to qmailInject but through a cmnd
-        #+end_org """
-
-        mailInput = b_io.stdin.read()
-        qmailInject(mailInput, argsList)
-
-        return(cmndOutcome)
-
-
-
-
-####+BEGIN: b:py3:cs:func/typing :funcName "qmailInjectPrep" :funcType "ExtTyp" :deco "track"
-""" #+begin_org
-*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  F-T-ExtTyp [[elisp:(outline-show-subtree+toggle)][||]] /qmailInjectPrep/  deco=track  [[elisp:(org-cycle)][| ]]
-#+end_org """
-@cs.track(fnLoc=True, fnEntry=True, fnExit=True)
-def qmailInjectPrep(
-####+END:
-        mailInput: str,
-        argsList: list[str],
-) -> EmailMessage:
-    """#+begin_org
-** [[elisp:(org-cycle)][| *DocStr | ] This =qmailInject= is a plugin replacement (a wrapper) for qmail-remote.
-
-    #+end_org """
-
-
-    body = mailInput
-
-    fd, tmpPath = tempfile.mkstemp(suffix=".mail", prefix="qmail-inject-")
-    try:
-        with os.fdopen(fd, 'w') as tmp:
-            tmp.write(f"argsList={argsList}\n")
-            tmp.write(body)
-    finally:
-        #os.remove(tmpPath)
-        #print(f"{tmpPath}")
-        pass
-
-    msgParser = Parser()
-    msg = msgParser.parsestr(body)
-
-    fromaddr = parseaddr(msg["from"])[1]
-
-    uid = os.getuid()
-    pid = os.getpid()
-
-    uidName = pwd.getpwuid(uid)[0]
-
-    aasMarmeeBase = aasMailFps.marmeeBaseForUsageAcct(
-        uidName,
-    )
-
-    marmee_bpoId, marmee_bpoRunEnv = aasOutMailFps.marmeeAasOutMailAddrFind(
-        aasMarmeeBase,
-        fromaddr,
-    )
-
-    bpoId = msg.get_all("x-bpoid")
-    if not bpoId:
-        msg['X-bpoId'] = marmee_bpoId
-        bpoId = [marmee_bpoId]
-
-    bpoRunEnv = msg.get_all("x-bporunenv")
-    if not bpoRunEnv:
-        msg['X-bpoRunEnv'] = marmee_bpoRunEnv
-        bpoRunEnv = [marmee_bpoRunEnv]
-
-    print(f"bpoId={bpoId} bpoRunEnv={bpoRunEnv}")
-
-    outMailFps = b.pattern.sameInstance(
-        aasOutMailFps.AasOutMail_FPs,
-        bpoId=bpoId[0],
-        envRelPath=bpoRunEnv[0],
-    )
-
-    credsFps = b.pattern.sameInstance(
-        gmailOauth2.AasMail_googleCreds_FPs,
-        bpoId=bpoId[0],
-        envRelPath=bpoRunEnv[0],
-    )
-    client_id = credsFps.fps_getParam('googleCreds_client_id').parValueGet()
-    client_secret = credsFps.fpCrypt_getParam('googleCreds_client_secret').parValueGet().decode("utf-8")
-    refresh_token = credsFps.fpCrypt_getParam('googleCreds_refresh_token').parValueGet().decode("utf-8")
-
-    msg['X-Oauth2-Client-Id'] = client_id
-    msg['X-Oauth2-Client-Secret'] = client_secret
-    msg['X-Oauth2-Refresh-Token'] = refresh_token
-
-    print(msg)
-
-    return msg
-
-
-####+BEGIN: b:py3:cs:func/typing :funcName "prepedQmailSubProc" :funcType "ExtTyp" :deco "track"
-""" #+begin_org
-*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  F-T-ExtTyp [[elisp:(outline-show-subtree+toggle)][||]] /prepedQmailInvoke/  deco=track  [[elisp:(org-cycle)][| ]]
-#+end_org """
-@cs.track(fnLoc=True, fnEntry=True, fnExit=True)
-def prepedQmailInvoke(
-####+END:
-        msg: EmailMessage,
-        injectionProgram,
-        injectionProgramArgs,
-) -> None:
-    """#+begin_org
-** [[elisp:(org-cycle)][| *DocStr | ] This =qmailInject= is a plugin replacement (a wrapper) for qmail-remote.
-    #+end_org """
-
-    outcome = x822Out.injectMsgWithQmailVariant(
-        msg,
-        injectionProgram,
-        injectionProgramArgs,
-    )
-
-    return outcome
 
 
 ####+BEGIN: b:py3:cs:framework/main :csInfo "csInfo" :noCmndEntry "noCmndProcessor" :extraParamsHook "g_extraParams" :importedCmndsModules "g_importedCmndsModules"

@@ -279,21 +279,10 @@ The envelope sender address is listed as _sender_ (~argsList[1]~).
 
     record_inMail(body, argsList)
 
-    arg_host = argsList[0]
-    arg_sender = argsList[1]
-
-    arg_recipients = []
-    for each in argsList[2:]:
-        arg_recipients.append(each)
-
-    #print(f"host={arg_host} sender={arg_sender} recipients={arg_recipients}")
-
-    fromaddr = None
-    toaddrs = list()
-
     email_parser = Parser()
     msg = email_parser.parsestr(body)
 
+    qmailRemoteWithMsg(msg, argsList)
 
 ####+BEGIN: b:py3:cs:func/typing :funcName "qmailRemoteWithMsg" :funcType "ExtTyp" :deco "track"
 """ #+begin_org
@@ -303,11 +292,21 @@ The envelope sender address is listed as _sender_ (~argsList[1]~).
 def qmailRemoteWithMsg(
 ####+END:
         msg: EmailMessage,
+        argsList: list[str],
 ) -> None:
     """#+begin_org
 ** [[elisp:(org-cycle)][| *DocStr | ] This =qmailRemote= is a plugin replacement (a wrapper) for qmail-remote.
     #+end_org """
 
+    arg_host = argsList[0]
+    arg_sender = argsList[1]
+
+    arg_recipients = []
+    for each in argsList[2:]:
+        arg_recipients.append(each)
+
+    #print(f"host={arg_host} sender={arg_sender} recipients={arg_recipients}")
+    
     tos = list()
     ccs = list()
     bccs = list()
@@ -336,7 +335,7 @@ def qmailRemoteWithMsg(
     if not bpoRunEnv:
         raise KeyError("Missing BpoRunEnv")
 
-    print(f"bpoId={bpoId} bpoRunEnv={bpoRunEnv}")
+    #print(f"bpoId={bpoId} bpoRunEnv={bpoRunEnv}")
 
     outMailFps = b.pattern.sameInstance(
         aasOutMailFps.AasOutMail_FPs,
@@ -388,9 +387,7 @@ def qmailRemoteWithMsg(
     #sender(arg_sender, tos + ccs + bccs, msg, oauth, acct)
 
 
-    #sender(arg_sender, argsList, msg, oauth, acct)
-    sender(msg['From'], msg['To'], msg, oauth, acct)
-
+    sender(arg_sender, arg_recipients, msg, oauth, acct)
 
 
 ####+BEGIN: b:py3:cs:func/typing :funcName "oauth_handler" :funcType "ExtTyp" :deco "track"
@@ -445,16 +442,17 @@ def sender(
 
     record_outMsg(msg)
 
+    #print(toaddrs)
 
     #out("KSubmission Faked: ")
     #zero()
-
 
     if acct.use_ssl:
         server = smtplib.SMTP_SSL(host=acct.address, port=acct.port)
     else:
         server = smtplib.SMTP(host=acct.address, port=acct.port)
 
+    #debug = 2
     server.set_debuglevel(debug)
 
     if acct.use_tls:

@@ -105,6 +105,7 @@ from bisos.marmee import aasInMailFps
 from bisos.marmee import aasOutMailFps
 from bisos.marmee import aasMailFps
 from bisos.marmee import gmailOauth2
+from bisos.marmee import x822Lib
 
 from bisos.qmail import qmailRemote
 
@@ -125,9 +126,9 @@ import urllib.request
 import requests
 import json
 import base64
+import enum
 
 import tempfile
-
 
 ####+BEGIN: blee:bxPanel:foldingSection :outLevel 0 :sep nil :title "CmndSvcs" :anchor ""  :extraInfo "Command Services Section"
 """ #+begin_org
@@ -172,7 +173,7 @@ def examples_csu(
     menuItem(verbosity='none', icmWrapper="cat ~/example.mail | ")
     menuItem(verbosity='full', icmWrapper="cat ~/example.mail | ")
 
-    cmndName = "prepAndQmailRemote" ;  cmndArgs = "-- -n"
+    cmndName = "monolithicSend" ;  cmndArgs = "-- -n"
     cps=cpsInit(); cps['runMode'] = "runDebug"
     menuItem(verbosity='none', icmWrapper="cat ~/example.mail | ")
     menuItem(verbosity='full', icmWrapper="cat ~/example.mail | ")
@@ -189,6 +190,84 @@ def examples_csu(
 *  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*     [[elisp:(outline-show-subtree+toggle)][| _Functions_: |]]  maildrop stdout/update  [[elisp:(org-shifttab)][<)]] E|
 #+end_org """
 ####+END:
+
+####+BEGIN: bx:dblock:python:enum :enumName "MetaQmailQueueOfQmailInject" :comment "Enum Values: "
+""" #+begin_org
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  Enum       [[elisp:(outline-show-subtree+toggle)][||]] /MetaQmailQueueOfQmailInject/ =Enum Values: fullRun, dryRun, runDebug=  [[elisp:(org-cycle)][| ]]
+#+end_org """
+@enum.unique
+class MetaQmailQueueOfQmailInject(enum.Enum):
+####+END:
+    defaultQmailInject='defaultQmailInject',
+    pythonQmailRemote='pythonQmailRemote',
+    defaultQmailRemote='defaultQmailRemote',
+
+
+####+BEGIN: b:py3:cs:func/typing :funcName "handOffToMetaQmailQueue" :funcType "extTyped" :deco "track"
+""" #+begin_org
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  F-T-extTyped [[elisp:(outline-show-subtree+toggle)][||]] /handOffToMetaQmailQueue/  deco=track  [[elisp:(org-cycle)][| ]]
+#+end_org """
+@cs.track(fnLoc=True, fnEntry=True, fnExit=True)
+def handOffToMetaQmailQueue(
+####+END:
+        msg,
+        metaQmailQueueOfQmailInject:  str,
+):
+    """ #+begin_org
+** [[elisp:(org-cycle)][| *DocStr | ] We are simulating the end handoff stage of qmailInject
+    in submission context.
+    Should be converted to be an operation
+    #+end_org """
+
+    senderAddr = x822Lib.msgSender(msg)
+    senderHost = senderAddr.split('@')[1]
+    allRecipients = x822Lib.msgAllRecipients(msg)
+    #print(allRecipients)
+
+    qmailRemoteArgs = [senderHost, senderAddr,]
+
+    for eachRecipient in allRecipients:
+        qmailRemoteArgs.append(eachRecipient[1])
+
+
+    #b_io.tm.here("qmail Inject \n{msgStr}".format(msgStr=msg.as_string()))
+    outcome = b.op.Outcome()
+
+    injectionProgramCmnd = ""
+    injectionProgramArgs = []
+
+    if metaQmailQueueOfQmailInject == MetaQmailQueueOfQmailInject.defaultQmailInject.value[0]:
+        injectionProgramCmnd =  "qmail-inject-bisos.cs"
+        if cs.runArgs.isRunModeDryRun():
+            injectionProgramArgs.append('-n')
+    elif metaQmailQueueOfQmailInject == MetaQmailQueueOfQmailInject.defaultQmailRemote.value[0]:
+        injectionProgramCmnd =  "qmail-remote-bisos.cs"
+        injectionProgramArgs =  qmailRemoteArgs
+    elif metaQmailQueueOfQmailInject == MetaQmailQueueOfQmailInject.pythonQmailRemote.value[0]:
+        qmailRemote.qmailRemoteWithMsg(msg, qmailRemoteArgs)
+    else:
+        print(f"NOTYET {metaQmailQueueOfQmailInject}")
+        return(b_io.eh.badOutcome(outcome))
+
+    if injectionProgramCmnd:
+        commandLine = injectionProgramCmnd + " " +  " ".join(injectionProgramArgs)
+        # print(commandLine)
+
+        if b.subProc.Op(outcome=outcome, log=1).bash(
+            f"""{commandLine}""",
+            stdin=msg.as_string(),
+        ).isProblematic():
+            print(outcome.stderr)
+            return(b_io.eh.badOutcome(outcome))
+
+        #if outcome.stdout: icm.ANN_note("Stdout: " +  outcome.stdout)
+        #if outcome.stderr: icm.ANN_note("Stderr: " +  outcome.stderr)
+
+
+    return outcome.set(
+        opError=b.OpError.Success,
+        opResults=None,
+    )
 
 
 ####+BEGIN: bx:cs:py3:section :title "CS-Commands"
@@ -228,11 +307,11 @@ class prepAndQmailInject(cs.Cmnd):
 
         return(cmndOutcome)
 
-####+BEGIN: b:py3:cs:cmnd/classHead :cmndName "prepAndQmailRemote" :cmndType ""  :comment "Inject as a cmnd" :parsMand "" :parsOpt "" :argsMin 0 :argsMax 9999 :pyInv "mailInput"
+####+BEGIN: b:py3:cs:cmnd/classHead :cmndName "monolithicSend" :cmndType ""  :comment "Inject as a cmnd" :parsMand "" :parsOpt "" :argsMin 0 :argsMax 9999 :pyInv "mailInput"
 """ #+begin_org
-*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  CmndSvc-   [[elisp:(outline-show-subtree+toggle)][||]] <<prepAndQmailRemote>>  *Inject as a cmnd*  =verify= argsMax=9999 ro=cli pyInv=mailInput   [[elisp:(org-cycle)][| ]]
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  CmndSvc-   [[elisp:(outline-show-subtree+toggle)][||]] <<monolithicSend>>  *Inject as a cmnd*  =verify= argsMax=9999 ro=cli pyInv=mailInput   [[elisp:(org-cycle)][| ]]
 #+end_org """
-class prepAndQmailRemote(cs.Cmnd):
+class monolithicSend(cs.Cmnd):
     cmndParamsMandatory = [ ]
     cmndParamsOptional = [ ]
     cmndArgsLen = {'Min': 0, 'Max': 9999,}
@@ -251,14 +330,17 @@ class prepAndQmailRemote(cs.Cmnd):
         cmndArgsSpecDict = self.cmndArgsSpec()
 ####+END:
         """ #+begin_org
-** [[elisp:(org-cycle)][| *DocStr | ] Interface to qmailInject but through a cmnd
+** [[elisp:(org-cycle)][| *DocStr | ] Was previously called prepAndQmailRemote
         #+end_org """
 
         if not mailInput:
             mailInput = b_io.stdin.read()
         msg = qmailInjectPrep(mailInput, argsList)
 
-        qmailRemote.qmailRemoteWithMsg(msg)
+        handOffToMetaQmailQueue(
+            msg,
+            MetaQmailQueueOfQmailInject.pythonQmailRemote.value[0],
+        )
 
         return(cmndOutcome)
 
@@ -320,7 +402,7 @@ def qmailInjectPrep(
         msg['X-bpoRunEnv'] = marmee_bpoRunEnv
         bpoRunEnv = [marmee_bpoRunEnv]
 
-    print(f"bpoId={bpoId} bpoRunEnv={bpoRunEnv}")
+    #print(f"bpoId={bpoId} bpoRunEnv={bpoRunEnv}")
 
     outMailFps = b.pattern.sameInstance(
         aasOutMailFps.AasOutMail_FPs,
@@ -341,7 +423,7 @@ def qmailInjectPrep(
     msg['X-Oauth2-Client-Secret'] = client_secret
     msg['X-Oauth2-Refresh-Token'] = refresh_token
 
-    print(msg)
+    #print(msg)
 
     return msg
 

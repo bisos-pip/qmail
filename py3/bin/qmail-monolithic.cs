@@ -1,6 +1,12 @@
 #!/bisos/venv/py3/dev-bisos3/bin/python
 # -*- coding: utf-8 -*-
 
+
+print("OBSOLETED")
+
+exit()
+
+
 """ #+begin_org
 * ~[Summary]~ :: qmail-inject-bisos.cs is a pre-processor for qmail-inject which pairs up with qmail-remote-bisos.cs
 #+end_org """
@@ -221,7 +227,10 @@ class noCmndProcessor(cs.Cmnd):
         mailInput = b_io.stdin.read()
 
         if mailInput:
-            qmailInject(mailInput, argsList)
+            qmailInject.prepAndQmailRemote().cmnd(rtInv, cmndOutcome,
+                                                  argsList=argsList,
+                                                  mailInput=mailInput,
+                                                  )
         else:
              examples().cmnd(rtInv, cmndOutcome)
 
