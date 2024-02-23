@@ -467,6 +467,8 @@ def sender(
 
     server.quit()
 
+    return
+
     out("KSubmission involved: ")
     if acct.use_ssl:
         out("SSL -- ")

@@ -17,7 +17,7 @@ def longDescription():
 
 
 #__version__ = get_version('unisos/icm/__init__.py')
-__version__ = '0.1'
+__version__ = '0.2'
 
 
 requires = [
@@ -28,7 +28,10 @@ requires = [
 #print('Requirements: %s' % ','.join(requires))
 
 scripts = [
-    "bin/marmeeQmail.cs",
+    "bin/bx-qmailBinsPrep.cs",
+    "bin/qmail-monolithic.cs",
+    "bin/qmail-inject-bisos.cs",
+    "bin/qmail-remote-bisos.cs",
 ]
 
 #
