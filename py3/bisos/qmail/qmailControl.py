@@ -133,98 +133,125 @@ class acctAddr_Type(enum.Enum):
 ####+END:
 
 
-####+BEGIN: b:py3:class/decl :className "AcctAddr" :superClass "object" :comment "Abstraction of a dotQmail" :classType "basic"
+####+BEGIN: b:py3:class/decl :className "QmailControlFV" :superClass "object" :comment "Abstraction of a dotQmail" :classType "basic"
 """ #+begin_org
-*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  Cls-basic  [[elisp:(outline-show-subtree+toggle)][||]] /AcctAddr/  superClass=object =Abstraction of a dotQmail=  [[elisp:(org-cycle)][| ]]
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  Cls-basic  [[elisp:(outline-show-subtree+toggle)][||]] /QmailControlFV/  superClass=object =Abstraction of a dotQmail=  [[elisp:(org-cycle)][| ]]
 #+end_org """
-class AcctAddr(object):
+class QmailControlFV(object):
 ####+END:
     """
-** Abstraction of a dotQmail
+** Abstraction of a Qmail Control File Variable
 """
 
     def __init__(
             self,
-            qmailAcct,
-            qmailAddr,
+            qmailControlBaseDir: str="/var/qmail/control",
     ):
 
-        self.qmailAcct = qmailAcct
-        self.qmailAddr = qmailAddr
+        self.qmailControlBaseDir = pathlib.Path(qmailControlBaseDir)
 
-####+BEGIN: b:py3:cs:method/typing :methodName "acctPath" :deco "default"
+####+BEGIN: b:py3:cs:method/typing :methodName "fvSet" :deco "default"
     """ #+begin_org
-**  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  Mtd-T-     [[elisp:(outline-show-subtree+toggle)][||]] /acctPath/ deco=default  deco=default  [[elisp:(org-cycle)][| ]]
+**  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  Mtd-T-     [[elisp:(outline-show-subtree+toggle)][||]] /fvSet/  deco=default  [[elisp:(org-cycle)][| ]]
     #+end_org """
     @cs.track(fnLoc=True, fnEntry=True, fnExit=True)
-    def acctPath(
+    def fvSet(
 ####+END:
             self,
+            fvName: str,
+            fvValue: str,
     ) -> pathlib.Path:
+
         return pathlib.Path(os.path.expanduser(f'~{self.qmailAcct}'))
 
-####+BEGIN: b:py3:cs:method/typing :methodName "dotQmailFileNameOfAddr" :deco "default"
+####+BEGIN: b:py3:cs:method/typing :methodName "fvGet" :deco "default"
     """ #+begin_org
-**  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  Mtd-T-     [[elisp:(outline-show-subtree+toggle)][||]] /dotQmailFileNameOfAddr/ deco=default  deco=default  [[elisp:(org-cycle)][| ]]
+**  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  Mtd-T-     [[elisp:(outline-show-subtree+toggle)][||]] /fvGet/  deco=default  [[elisp:(org-cycle)][| ]]
     #+end_org """
     @cs.track(fnLoc=True, fnEntry=True, fnExit=True)
-    def dotQmailFileNameOfAddr(
+    def fvGet(
 ####+END:
             self,
-    ) -> pathlib.Path:
+            fvName:str,
+    ) -> str:
         return pathlib.Path(f".qmail-{self.qmailAddr}")
 
-####+BEGIN: b:py3:cs:method/typing :methodName "dotQmailFilePath" :deco "default"
-    """ #+begin_org
-**  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  Mtd-T-     [[elisp:(outline-show-subtree+toggle)][||]] /dotQmailFilePath/ deco=default  deco=default  [[elisp:(org-cycle)][| ]]
-    #+end_org """
-    @cs.track(fnLoc=True, fnEntry=True, fnExit=True)
-    def dotQmailFilePath(
+####+BEGIN: b:py3:class/decl :className "QCFV_Global" :superClass "QmailControlFV" :comment "" :classType "basic"
+""" #+begin_org
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  Cls-basic  [[elisp:(outline-show-subtree+toggle)][||]] /QCFV_Global/  superClass=QmailControlFV  [[elisp:(org-cycle)][| ]]
+#+end_org """
+class QCFV_Global(QmailControlFV):
 ####+END:
-            self,
-    ) -> pathlib.Path:
-        return (
-            self.acctPath().joinpath(
-               self.dotQmailFileNameOfAddr()
-            )
-        )
+    """
+** Abstraction of a Qmail Control File Variable
+"""
 
-####+BEGIN: b:py3:cs:method/typing :methodName "dotQmailFileContentRead" :deco "default"
+    def __init__(
+            self,
+            qmailControlBaseDir: str="/var/qmail/control",
+    ):
+
+        self.qmailControlBaseDir = pathlib.Path(qmailControlBaseDir)
+
+    @property
+    def me(self):
+        return self._me
+
+    @me.setter
+    def me(self, value):
+        self._me = value
+
+####+BEGIN: b:py3:cs:method/typing :methodName "defaultsSet" :deco "default"
     """ #+begin_org
-**  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  Mtd-T-     [[elisp:(outline-show-subtree+toggle)][||]] /dotQmailFileContentRead/ deco=default  deco=default  [[elisp:(org-cycle)][| ]]
+**  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  Mtd-T-     [[elisp:(outline-show-subtree+toggle)][||]] /default/  deco=default  [[elisp:(org-cycle)][| ]]
     #+end_org """
     @cs.track(fnLoc=True, fnEntry=True, fnExit=True)
-    def dotQmailFileContentRead(
+    def default(
 ####+END:
             self,
+            fvName:str,
     ) -> str:
-        return (
-            pyRunAs.as_root_readFromFile(
-                self.dotQmailFilePath()
-            )
-        )
+        return pathlib.Path(f".qmail-{self.qmailAddr}")
 
-####+BEGIN: b:py3:cs:method/typing :methodName "dotQmailFileContentWrite" :deco "default"
+
+####+BEGIN: b:py3:class/decl :className "QCFV_qmailInject" :superClass "QmailControlFV" :comment "" :classType "basic"
+""" #+begin_org
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  Cls-basic  [[elisp:(outline-show-subtree+toggle)][||]] /QCFV_qmailInject/  superClass=QmailControlFV  [[elisp:(org-cycle)][| ]]
+#+end_org """
+class QCFV_qmailInject(QmailControlFV):
+####+END:
+    """
+** Abstraction of a Qmail Control File Variable
+"""
+
+    def __init__(
+            self,
+            qmailControlBaseDir: str="/var/qmail/control",
+    ):
+
+        self.qmailControlBaseDir = pathlib.Path(qmailControlBaseDir)
+
+    @property
+    def defaulthost(self):
+        return self._me
+
+    @defaulthost.setter
+    def defaulthost(self, value):
+        self._me = value
+
+####+BEGIN: b:py3:cs:method/typing :methodName "default" :deco "default"
     """ #+begin_org
-**  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  Mtd-T-     [[elisp:(outline-show-subtree+toggle)][||]] /dotQmailFileContentWrite/ deco=default  deco=default  [[elisp:(org-cycle)][| ]]
+**  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  Mtd-T-     [[elisp:(outline-show-subtree+toggle)][||]] /default/  deco=default  [[elisp:(org-cycle)][| ]]
     #+end_org """
     @cs.track(fnLoc=True, fnEntry=True, fnExit=True)
-    def dotQmailFileContentWrite(
+    def default(
 ####+END:
             self,
-            content: str,
-    ) -> None:
-        pyRunAs.as_root_writeToFile(
-            self.dotQmailFilePath(),
-            content,
-        )
-        pyRunAs.as_root_osSystem(
-            f"""chown {self.qmailAcct} {self.dotQmailFilePath()}"""
-        )
-        pyRunAs.as_root_osSystem(
-            f"""chmod 600 {self.dotQmailFilePath()}"""
-        )
-        os.system(f"ls -l {self.dotQmailFilePath()}")
+            fvName:str,
+    ) -> str:
+        return pathlib.Path(f".qmail-{self.qmailAddr}")
+
+
 
 ####+BEGIN: bx:cs:py3:section :title "Public Functions"
 """ #+begin_org
@@ -246,27 +273,7 @@ def commonParamsSpecify(
     csParams,
 ):
 ####+END:
-    csParams.parDictAdd(
-        parName='qmailAcct',
-        parDescription="Qmail O/R Account",
-        parDataType=None,
-        parDefault=None,
-        parChoices=["any"],
-        # parScope=icm.CmndParamScope.TargetParam,
-        argparseShortOpt=None,
-        argparseLongOpt='--qmailAcct',
-    )
-    csParams.parDictAdd(
-        parName='qmailAddr',
-        parDescription="Qmail O/R Account Address",
-        parDataType=None,
-        parDefault=None,
-        parChoices=["any"],
-        # parScope=icm.CmndParamScope.TargetParam,
-        argparseShortOpt=None,
-        argparseLongOpt='--qmailAddr',
-    )
-
+    pass
 
 ####+BEGIN: bx:cs:py3:section :title "CS-Lib Examples"
 """ #+begin_org
@@ -281,8 +288,7 @@ def commonParamsSpecify(
 @cs.track(fnLoc=True, fnEntry=True, fnExit=True)
 def examples_csu(
 ####+END:
-        qmailAcct: str,
-        qmailAddr: str,
+        qmailFlavor: str = "wasQmail",
         sectionTitle: typing.AnyStr = "",
 ) -> None:
     """ #+begin_org
@@ -297,8 +303,8 @@ def examples_csu(
         cs.examples.menuChapter('*BxQmail Account And Addrs Utilities*')
 
     icmWrapper = "" ;  cmndName = "qmailAcctAddr_maildropUpdate"
-    cps = cpsInit() ; cps['qmailAcct'] = qmailAcct ; cps['qmailAddr'] = qmailAddr
-    cmndArgs = qmailAddr
+    cps = cpsInit() ; cps['qmailAcct'] = "notyet" ; cps['qmailAddr'] = "notyet"
+    cmndArgs = ""
     cs.examples.cmndInsert(cmndName, cps, cmndArgs, verbosity='none', icmWrapper=icmWrapper)
 
 

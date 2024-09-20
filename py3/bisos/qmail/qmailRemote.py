@@ -367,6 +367,7 @@ def qmailRemoteWithMsg(
     #use_tls = outMailFps.fps_getParam('outMail_useTls').parValueGet()
     use_tls = "False"
 
+    # String to Boolean -- "True" -> True
     if use_ssl == "True": use_ssl = True
     if use_ssl == "False": use_ssl = False
     if use_tls == "True": use_tls = True

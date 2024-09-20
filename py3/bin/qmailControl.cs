@@ -1,9 +1,8 @@
-#!/bisos/venv/py3/dev-bisos3/bin/python
+#!/bin/env python
 # -*- coding: utf-8 -*-
 
-
 """ #+begin_org
-* ~[Summary]~ :: qmail-inject-bisos.cs is a pre-processor for qmail-inject which pairs up with qmail-remote-bisos.cs
+* ~[Summary]~ :: A =CmndSvc= for configuration of qmailMua.
 #+end_org """
 
 ####+BEGIN: b:py3:cs:file/dblockControls :classification "cs-mu"
@@ -30,27 +29,28 @@
 ####+BEGIN: b:prog:file/particulars :authors ("./inserts/authors-mb.org")
 """ #+begin_org
 * *[[elisp:(org-cycle)][| Particulars |]]* :: Authors, version
-** This File: /bisos/git/auth/bxRepos/bisos-pip/marmee/py3/bin/qmail-remote.cs
+** This File: /bisos/git/auth/bxRepos/bisos-pip/qmail/py3/bin/qmailDaemonSysd.cs
 ** Authors: Mohsen BANAN, http://mohsen.banan.1.byname.net/contact
 #+end_org """
 ####+END:
 
-####+BEGIN: b:py3:file/particulars-csInfo :status "inUse"
+####+BEGIN: b:python:file/particulars-csInfo :status "inUse"
 """ #+begin_org
 * *[[elisp:(org-cycle)][| Particulars-csInfo |]]*
 #+end_org """
 import typing
-csInfo: typing.Dict[str, typing.Any] = { 'moduleName': ['qmail-remote'], }
-csInfo['version'] = '202210150153'
+csInfo: typing.Dict[str, typing.Any] = { 'moduleName': ['qmailDaemonSysd'], }
+csInfo['version'] = '202305114317'
 csInfo['status']  = 'inUse'
-csInfo['panel'] = 'qmail-remote-Panel.org'
+csInfo['panel'] = 'qmailDaemonSysd-Panel.org'
 csInfo['groupingType'] = 'IcmGroupingType-pkged'
 csInfo['cmndParts'] = 'IcmCmndParts[common] IcmCmndParts[param]'
 ####+END:
 
 """ #+begin_org
-* [[elisp:(org-cycle)][| ~Description~ |]] :: A replacement module for qmail-remote
+* /[[elisp:(org-cycle)][| Description |]]/ :: [[file:/bisos/git/auth/bxRepos/blee-binders/bisos-core/COMEEGA/_nodeBase_/fullUsagePanel-en.org][BISOS COMEEGA Panel]]
 Module description comes here.
+** Relevant Panels:
 ** Status: In use with blee3
 ** /[[elisp:(org-cycle)][| Planned Improvements |]]/ :
 *** TODO complete fileName in particulars.
@@ -58,12 +58,13 @@ Module description comes here.
 
 ####+BEGIN: b:prog:file/orgTopControls :outLevel 1
 """ #+begin_org
-* [[elisp:(org-cycle)][| Controls |]] :: [[elisp:(delete-other-windows)][(1)]] | [[elisp:(show-all)][Show-All]]  [[elisp:(org-shifttab)][Overview]]  [[elisp:(progn (org-shifttab) (org-content))][Content]] | [[elisp:(blee:ppmm:org-mode-toggle)][Nat]] | [[elisp:(bx:org:run-me)][Run]] | [[elisp:(bx:org:run-me-eml)][RunEml]] | [[elisp:(progn (save-buffer) (kill-buffer))][S&Q]]  [[elisp:(save-buffer)][Save]]  [[elisp:(kill-buffer)][Quit]] [[elisp:(org-cycle)][| ]]
+* [[elisp:(org-cycle)][| Controls |]] :: [[elisp:(delete-other-windows)][(1)]] | [[elisp:(show-all)][Show-All]]  [[elisp:(org-shifttab)][Overview]]  [[elisp:(progn (org-shifttab) (org-content))][Content]] | [[file:Panel.org][Panel]] | [[elisp:(blee:ppmm:org-mode-toggle)][Nat]] | [[elisp:(bx:org:run-me)][Run]] | [[elisp:(bx:org:run-me-eml)][RunEml]] | [[elisp:(progn (save-buffer) (kill-buffer))][S&Q]]  [[elisp:(save-buffer)][Save]]  [[elisp:(kill-buffer)][Quit]] [[elisp:(org-cycle)][| ]]
 ** /Version Control/ ::  [[elisp:(call-interactively (quote cvs-update))][cvs-update]]  [[elisp:(vc-update)][vc-update]] | [[elisp:(bx:org:agenda:this-file-otherWin)][Agenda-List]]  [[elisp:(bx:org:todo:this-file-otherWin)][ToDo-List]]
+
 #+end_org """
 ####+END:
 
-####+BEGIN: b:py3:file/workbench :outLevel 1
+####+BEGIN: b:python:file/workbench :outLevel 1
 """ #+begin_org
 * [[elisp:(org-cycle)][| Workbench |]] :: [[elisp:(python-check (format "/bisos/venv/py3/bisos3/bin/python -m pyclbr %s" (bx:buf-fname))))][pyclbr]] || [[elisp:(python-check (format "/bisos/venv/py3/bisos3/bin/python -m pydoc ./%s" (bx:buf-fname))))][pydoc]] || [[elisp:(python-check (format "/bisos/pipx/bin/pyflakes %s" (bx:buf-fname)))][pyflakes]] | [[elisp:(python-check (format "/bisos/pipx/bin/pychecker %s" (bx:buf-fname))))][pychecker (executes)]] | [[elisp:(python-check (format "/bisos/pipx/bin/pycodestyle %s" (bx:buf-fname))))][pycodestyle]] | [[elisp:(python-check (format "/bisos/pipx/bin/flake8 %s" (bx:buf-fname))))][flake8]] | [[elisp:(python-check (format "/bisos/pipx/bin/pylint %s" (bx:buf-fname))))][pylint]]  [[elisp:(org-cycle)][| ]]
 #+end_org """
@@ -82,33 +83,12 @@ Module description comes here.
 from bisos import b
 from bisos.b import cs
 from bisos.b import b_io
+from bisos.common import csParam
 
 import collections
 ####+END:
 
-import os
-
-import sys
-import pwd
-
-from email.message import EmailMessage
-from email.parser import Parser
-from email.utils import parseaddr, getaddresses
-from os.path import expanduser
-from configparser import ConfigParser
-from collections import namedtuple
-
-import smtplib
-import http
-import urllib
-import urllib.request
-import requests
-import json
-import base64
-
-import tempfile
-
-from bisos.marmee import aasMailFps
+# from bisos.currents import currentsConfig
 
 
 """ #+begin_org
@@ -116,32 +96,28 @@ from bisos.marmee import aasMailFps
 #+BEGIN_SRC emacs-lisp
 (setq  b:py:cs:csuList
   (list
-   "bisos.b.cs.ro"
+   "bisos.b.cs.ro"    ;; Must be included even when unused
    "blee.icmPlayer.bleep"
-   "bisos.marmee.gmailOauth2"
-   "bisos.marmee.aasOutMailFps"
-   "bisos.qmail.qmailInject"
-   "bisos.qmail.qmailRemote"
+   "bisos.b.clsMethod_csu"
+   "bisos.qmail.qmailControl"
  ))
 #+END_SRC
 #+RESULTS:
-| bisos.b.cs.ro | blee.icmPlayer.bleep | bisos.marmee.gmailOauth2 | bisos.marmee.aasOutMailFps | bisos.qmail.qmailInject | bisos.qmail.qmailRemote |
+| bisos.b.cs.ro | blee.icmPlayer.bleep | bisos.b.clsMethod_csu | bisos.qmail.qmailControl |
 #+end_org """
 
 ####+BEGIN: b:py3:cs:framework/csuListProc :pyImports t :csuImports t :csuParams t
 """ #+begin_org
-*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  CsFrmWrk   [[elisp:(outline-show-subtree+toggle)][||]] =Process CSU List= with /6/ in csuList pyImports=t csuImports=t csuParams=t
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  CsFrmWrk   [[elisp:(outline-show-subtree+toggle)][||]] =Process CSU List= with /4/ in csuList pyImports=t csuImports=t csuParams=t
 #+end_org """
 
 from bisos.b.cs import ro
 from blee.icmPlayer import bleep
-from bisos.marmee import gmailOauth2
-from bisos.marmee import aasOutMailFps
-from bisos.qmail import qmailInject
-from bisos.qmail import qmailRemote
+from bisos.b import clsMethod_csu
+from bisos.qmail import qmailControl
 
 
-csuList = [ 'bisos.b.cs.ro', 'blee.icmPlayer.bleep', 'bisos.marmee.gmailOauth2', 'bisos.marmee.aasOutMailFps', 'bisos.qmail.qmailInject', 'bisos.qmail.qmailRemote', ]
+csuList = [ 'bisos.b.cs.ro', 'blee.icmPlayer.bleep', 'bisos.b.clsMethod_csu', 'bisos.qmail.qmailControl', ]
 
 g_importedCmndsModules = cs.csuList_importedModules(csuList)
 
@@ -152,7 +128,15 @@ def g_extraParams():
 
 ####+END:
 
-####+BEGIN: b:py3:cs:cmnd/classHead :cmndName "examplesNOT" :cmndType ""  :comment "FrameWrk: ICM Examples" :parsMand "" :parsOpt "" :argsMin 0 :argsMax 0 :pyInv ""
+####+BEGIN: bx:cs:py3:section :title "Main Reflected Global Instances"
+""" #+begin_org
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  /Section/    [[elisp:(outline-show-subtree+toggle)][||]] *Global Instances*  [[elisp:(org-cycle)][| ]]
+#+end_org """
+####+END:
+
+# No Main Reflected Global Instances
+
+####+BEGIN: b:py3:cs:cmnd/classHead :cmndName "examples" :cmndType ""  :comment "FrameWrk: ICM Examples" :parsMand "" :parsOpt "" :argsMin 0 :argsMax 0 :pyInv ""
 """ #+begin_org
 *  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  CmndSvc-   [[elisp:(outline-show-subtree+toggle)][||]] <<examples>>  *FrameWrk: ICM Examples*  =verify= ro=cli   [[elisp:(org-cycle)][| ]]
 #+end_org """
@@ -171,14 +155,15 @@ class examples(cs.Cmnd):
         if self.invocationValidate(rtInv, cmndOutcome, callParamsDict, None).isProblematic():
             return b_io.eh.badOutcome(cmndOutcome)
 ####+END:
-        cmndOutcome = self.getOpOutcome()
-        def cpsInit(): return collections.OrderedDict()
-        def menuItem(verbosity, **kwArgs): cs.examples.cmndInsert(cmndName, cps, cmndArgs, verbosity=verbosity, **kwArgs) # 'little' or 'none'
-        # def extMenuItem(verbosity): cs.examples.cmndInsert(cmndName, cps, cmndArgs, icmName=icmExName, verbosity=verbosity) # 'little' or 'none'
-        def execLineEx(cmndStr): cs.examples.execInsert(execLine=cmndStr)
+        self.cmndDocStr(f""" #+begin_org
+** [[elisp:(org-cycle)][| *CmndDesc:* | ]]  Conventional top level example.
+        #+end_org """)
 
-        #logControler = b_io.log.Control()
-        #logControler.loggerSetLevel(20)
+####+BEGINNOT: b:py3:cs:module/cur_paramsAssign  :curParsList ("NOTYET")
+####+END:
+        # def cpsInit(): return collections.OrderedDict()
+        # def menuItem(verbosity): cs.examples.cmndInsert(cmndName, cps, cmndArgs, verbosity=verbosity) # 'little' or 'none'
+        # def execLineEx(cmndStr): cs.examples.execInsert(execLine=cmndStr)
 
         cs.examples.myName(cs.G.icmMyName(), cs.G.icmMyFullName())
 
@@ -186,63 +171,28 @@ class examples(cs.Cmnd):
 
         bleep.examples_icmBasic()
 
-        qmailInject.examples_csu(sectionTitle="default")
-        qmailRemote.examples_csu(sectionTitle="default")
+        # cs.examples.menuChapter('*Currents Examples Settings*')
+        # cur_examples()
+
+        qmailControl.examples_csu(sectionTitle="default")
 
         return(cmndOutcome)
 
-####+BEGIN: b:py3:cs:cmnd/classHead :cmndName "noCmndProcessor" :cmndType ""  :comment "No Cmnds Dispatch" :parsMand "" :parsOpt "" :argsMin 0 :argsMax 9999 :pyInv ""
+####+BEGIN: blee:bxPanel:foldingSection :outLevel 0 :sep nil :title "Main" :anchor ""  :extraInfo "Framework Dblock"
 """ #+begin_org
-*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  CmndSvc-   [[elisp:(outline-show-subtree+toggle)][||]] <<noCmndProcessor>>  *No Cmnds Dispatch*  =verify= argsMax=9999 ro=cli   [[elisp:(org-cycle)][| ]]
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*     [[elisp:(outline-show-subtree+toggle)][| _Main_: |]]  Framework Dblock  [[elisp:(org-shifttab)][<)]] E|
 #+end_org """
-class noCmndProcessor(cs.Cmnd):
-    cmndParamsMandatory = [ ]
-    cmndParamsOptional = [ ]
-    cmndArgsLen = {'Min': 0, 'Max': 9999,}
-
-    @cs.track(fnLoc=True, fnEntry=True, fnExit=True)
-    def cmnd(self,
-             rtInv: cs.RtInvoker,
-             cmndOutcome: b.op.Outcome,
-             argsList: typing.Optional[list[str]]=None,  # CsArgs
-    ) -> b.op.Outcome:
-        """No Cmnds Dispatch"""
-        callParamsDict = {}
-        if self.invocationValidate(rtInv, cmndOutcome, callParamsDict, argsList).isProblematic():
-            return b_io.eh.badOutcome(cmndOutcome)
-        cmndArgsSpecDict = self.cmndArgsSpec()
 ####+END:
-        """ #+begin_org
-** [[elisp:(org-cycle)][| *DocStr | ] Dispatch examples cmnd when nor args, otherwiseprocess args as qmail-remote does.
-        #+end_org """
 
-        #mailInput = sys.stdin.read()
-        mailInput = b_io.stdin.read()
-
-        if mailInput:
-            qmailInject(mailInput, argsList)
-
-            # qmailInject.prepAndQmailRemote().cmnd(
-            #     rtInv, cmndOutcome,
-            #     argsList=argsList,
-            #     mailInput=mailInput,
-            # )
-
-        else:
-             examples().cmnd(rtInv, cmndOutcome)
-
-        return(cmndOutcome)
-
-
-####+BEGIN: b:py3:cs:framework/main :csInfo "csInfo" :noCmndEntry "noCmndProcessor" :extraParamsHook "g_extraParams" :importedCmndsModules "g_importedCmndsModules"
+####+BEGIN: b:py3:cs:framework/main :csInfo "csInfo" :noCmndEntry "examples" :extraParamsHook "g_extraParams" :importedCmndsModules "g_importedCmndsModules"
 """ #+begin_org
-*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  CsFrmWrk   [[elisp:(outline-show-subtree+toggle)][||]] =g_csMain= (csInfo, _noCmndProcessor_, g_extraParams, g_importedCmndsModules)
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  CsFrmWrk   [[elisp:(outline-show-subtree+toggle)][||]] =g_csMain= (csInfo, _examples_, g_extraParams, g_importedCmndsModules)
 #+end_org """
 
 if __name__ == '__main__':
     cs.main.g_csMain(
         csInfo=csInfo,
-        noCmndEntry=noCmndProcessor,  # specify a Cmnd name
+        noCmndEntry=examples,  # specify a Cmnd name
         extraParamsHook=g_extraParams,
         importedCmndsModules=g_importedCmndsModules,
     )
