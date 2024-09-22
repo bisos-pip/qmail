@@ -85,6 +85,7 @@ from bisos.b import b_io
 
 ####+END:
 
+import sys
 import collections
 
 import collections
@@ -128,14 +129,14 @@ class acctAddr_Type(enum.Enum):
 
 ####+BEGIN: bx:cs:py3:section :title "Public Classes"
 """ #+begin_org
-*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  /Section/    [[elisp:(outline-show-subtree+toggle)][||]] *Public Functions*  [[elisp:(org-cycle)][| ]]
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  /Section/    [[elisp:(outline-show-subtree+toggle)][||]] *Public Classes*  [[elisp:(org-cycle)][| ]]
 #+end_org """
 ####+END:
 
 
-####+BEGIN: b:py3:class/decl :className "QmailControlFV" :superClass "object" :comment "Abstraction of a dotQmail" :classType "basic"
+####+BEGIN: b:py3:class/decl :className "QmailControlFV" :superClass "object" :comment "Abstraction of a  Qmail Control File Variable" :classType "basic"
 """ #+begin_org
-*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  Cls-basic  [[elisp:(outline-show-subtree+toggle)][||]] /QmailControlFV/  superClass=object =Abstraction of a dotQmail=  [[elisp:(org-cycle)][| ]]
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  Cls-basic  [[elisp:(outline-show-subtree+toggle)][||]] /QmailControlFV/  superClass=object =Abstraction of a  Qmail Control File Variable=  [[elisp:(org-cycle)][| ]]
 #+end_org """
 class QmailControlFV(object):
 ####+END:
@@ -147,7 +148,6 @@ class QmailControlFV(object):
             self,
             qmailControlBaseDir: str="/var/qmail/control",
     ):
-
         self.qmailControlBaseDir = pathlib.Path(qmailControlBaseDir)
 
 ####+BEGIN: b:py3:cs:method/typing :methodName "fvSet" :deco "default"
@@ -162,7 +162,7 @@ class QmailControlFV(object):
             fvValue: str,
     ) -> pathlib.Path:
 
-        return pathlib.Path(os.path.expanduser(f'~{self.qmailAcct}'))
+        return b.fv.writeToBaseDir(self.qmailControlBaseDir, fvName, fvValue)
 
 ####+BEGIN: b:py3:cs:method/typing :methodName "fvGet" :deco "default"
     """ #+begin_org
@@ -172,9 +172,44 @@ class QmailControlFV(object):
     def fvGet(
 ####+END:
             self,
-            fvName:str,
-    ) -> str:
-        return pathlib.Path(f".qmail-{self.qmailAddr}")
+            fvName: str,
+    ) -> str | None:
+
+        return b.fv.readFromBaseDir(self.qmailControlBaseDir, fvName)
+
+####+BEGIN: b:py3:cs:method/typing :methodName "fvsDictSet" :deco "default"
+    """ #+begin_org
+**  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  Mtd-T-     [[elisp:(outline-show-subtree+toggle)][||]] /fvsDictSet/  deco=default  [[elisp:(org-cycle)][| ]]
+    #+end_org """
+    @cs.track(fnLoc=True, fnEntry=True, fnExit=True)
+    def fvsDictSet(
+####+END:
+            self,
+            fvsDict: typing.Dict[str, str],
+    ) -> str | None:
+
+        for fvName, fvValue in fvsDict.items():
+            self.fvSet(fvName, fvValue)
+
+####+BEGIN: b:py3:cs:method/typing :methodName "fvsDictCurGet" :deco "default"
+    """ #+begin_org
+**  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  Mtd-T-     [[elisp:(outline-show-subtree+toggle)][||]] /fvsDictCurGet/  deco=default  [[elisp:(org-cycle)][| ]]
+    #+end_org """
+    @cs.track(fnLoc=True, fnEntry=True, fnExit=True)
+    def fvsDictCurGet(
+####+END:
+            self,
+            fvsDict: typing.Dict[str, str],
+    ) -> typing.Dict[str, str]:
+
+        result = {}
+
+        for fvName, fvValueIn in fvsDict.items():
+            fvValueCur = self.fvGet(fvName,)
+            result[fvName] = fvValueCur
+
+        return result
+
 
 ####+BEGIN: b:py3:class/decl :className "QCFV_Global" :superClass "QmailControlFV" :comment "" :classType "basic"
 """ #+begin_org
@@ -190,35 +225,38 @@ class QCFV_Global(QmailControlFV):
             self,
             qmailControlBaseDir: str="/var/qmail/control",
     ):
-
-        self.qmailControlBaseDir = pathlib.Path(qmailControlBaseDir)
+        super().__init__(qmailControlBaseDir,)
 
     @property
     def me(self):
-        return self._me
+        return self.fvGet("me")
 
     @me.setter
     def me(self, value):
-        self._me = value
+        return self.fvSet("me", value)
 
-####+BEGIN: b:py3:cs:method/typing :methodName "defaultsSet" :deco "default"
+####+BEGIN: b:py3:cs:method/typing :methodName "fvsDict" :deco "default"
     """ #+begin_org
-**  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  Mtd-T-     [[elisp:(outline-show-subtree+toggle)][||]] /default/  deco=default  [[elisp:(org-cycle)][| ]]
+**  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  Mtd-T-     [[elisp:(outline-show-subtree+toggle)][||]] /fvsDict/  deco=default  [[elisp:(org-cycle)][| ]]
     #+end_org """
     @cs.track(fnLoc=True, fnEntry=True, fnExit=True)
-    def default(
+    def fvsDict(
 ####+END:
             self,
-            fvName:str,
-    ) -> str:
-        return pathlib.Path(f".qmail-{self.qmailAddr}")
+    ) -> typing.Dict[str, str]:
+
+        fvs = {
+            "me": "DomainName",
+        }
+
+        return fvs
 
 
-####+BEGIN: b:py3:class/decl :className "QCFV_qmailInject" :superClass "QmailControlFV" :comment "" :classType "basic"
+####+BEGIN: b:py3:class/decl :className "QCFV_QmailInject" :superClass "QmailControlFV" :comment "" :classType "basic"
 """ #+begin_org
-*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  Cls-basic  [[elisp:(outline-show-subtree+toggle)][||]] /QCFV_qmailInject/  superClass=QmailControlFV  [[elisp:(org-cycle)][| ]]
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  Cls-basic  [[elisp:(outline-show-subtree+toggle)][||]] /QCFV_QmailInject/  superClass=QmailControlFV  [[elisp:(org-cycle)][| ]]
 #+end_org """
-class QCFV_qmailInject(QmailControlFV):
+class QCFV_QmailInject(QmailControlFV):
 ####+END:
     """
 ** Abstraction of a Qmail Control File Variable
@@ -228,28 +266,87 @@ class QCFV_qmailInject(QmailControlFV):
             self,
             qmailControlBaseDir: str="/var/qmail/control",
     ):
-
-        self.qmailControlBaseDir = pathlib.Path(qmailControlBaseDir)
+        super().__init__(qmailControlBaseDir,)
 
     @property
     def defaulthost(self):
-        return self._me
+        return self.fvGet("defaulthost")
 
     @defaulthost.setter
     def defaulthost(self, value):
-        self._me = value
+        return self.fvSet("defaulthost", value)
 
-####+BEGIN: b:py3:cs:method/typing :methodName "default" :deco "default"
+####+BEGIN: b:py3:cs:method/typing :methodName "fvsDict" :deco "default"
     """ #+begin_org
-**  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  Mtd-T-     [[elisp:(outline-show-subtree+toggle)][||]] /default/  deco=default  [[elisp:(org-cycle)][| ]]
+**  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  Mtd-T-     [[elisp:(outline-show-subtree+toggle)][||]] /fvsDict/  deco=default  [[elisp:(org-cycle)][| ]]
     #+end_org """
     @cs.track(fnLoc=True, fnEntry=True, fnExit=True)
-    def default(
+    def fvsDict(
 ####+END:
             self,
-            fvName:str,
-    ) -> str:
-        return pathlib.Path(f".qmail-{self.qmailAddr}")
+    ) -> typing.Dict[str, str]:
+
+        globals = QCFV_Global()
+        me = globals.me
+        if me is None:
+            return {}
+
+        fvs = {
+            "defaultdomain": me,
+            "defaulthost": me,
+            "idhost": me,
+            "plusdomain": me,
+        }
+
+        return fvs
+
+
+
+####+BEGIN: b:py3:class/decl :className "QCFV_QmailSend" :superClass "QmailControlFV" :comment "" :classType "basic"
+""" #+begin_org
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  Cls-basic  [[elisp:(outline-show-subtree+toggle)][||]] /QCFV_QmailSend/  superClass=QmailControlFV  [[elisp:(org-cycle)][| ]]
+#+end_org """
+class QCFV_QmailSend(QmailControlFV):
+####+END:
+    """
+** Abstraction of a Qmail Control File Variable
+"""
+
+    def __init__(
+            self,
+            qmailControlBaseDir: str="/var/qmail/control",
+    ):
+        super().__init__(qmailControlBaseDir,)
+
+    @property
+    def bouncefrom(self):
+        return self.fvGet("bouncefrom")
+
+    @bouncefrom.setter
+    def bouncefrom(self, value):
+        return self.fvSet("bouncefrom", value)
+
+####+BEGIN: b:py3:cs:method/typing :methodName "fvsDict" :deco "default"
+    """ #+begin_org
+**  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  Mtd-T-     [[elisp:(outline-show-subtree+toggle)][||]] /fvsDict/  deco=default  [[elisp:(org-cycle)][| ]]
+    #+end_org """
+    @cs.track(fnLoc=True, fnEntry=True, fnExit=True)
+    def fvsDict(
+####+END:
+            self,
+    ) -> typing.Dict[str, str]:
+
+        globals = QCFV_Global()
+        me = globals.me
+        if me is None:
+            return {}
+
+        fvs = {
+            "bouncefrom": "mailer-daemon",
+            "bouncehost": me,
+        }
+
+        return fvs
 
 
 
@@ -258,6 +355,26 @@ class QCFV_qmailInject(QmailControlFV):
 *  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  /Section/    [[elisp:(outline-show-subtree+toggle)][||]] *Public Functions*  [[elisp:(org-cycle)][| ]]
 #+end_org """
 ####+END:
+
+####+BEGIN: b:py3:cs:func/typing :funcName "controledQmailPrograms" :funcType "extTyped" :deco "track"
+""" #+begin_org
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  F-T-extTyped [[elisp:(outline-show-subtree+toggle)][||]] /controledQmailPrograms/  deco=track  [[elisp:(org-cycle)][| ]]
+#+end_org """
+@cs.track(fnLoc=True, fnEntry=True, fnExit=True)
+def controledQmailPrograms(
+####+END:
+) -> list[str]:
+    """ #+begin_org
+** [[elisp:(org-cycle)][| *DocStr | ]
+    #+end_org """
+
+    progsList: list[str] = [
+        "Global",
+        "QmailInject",
+        "QmailSend",
+    ]
+
+    return progsList
 
 ####+BEGIN: bx:cs:py3:section :title "Common Parameters Specification"
 """ #+begin_org
@@ -295,17 +412,53 @@ def examples_csu(
 ** [[elisp:(org-cycle)][| *DocStr | ] Examples of Service Access Instance Commands.
     #+end_org """
 
-    def cpsInit(): return collections.OrderedDict()
-    def menuItem(verbosity): cs.examples.cmndInsert(cmndName, cps, cmndArgs, verbosity=verbosity) # 'little' or 'none'
-    # def execLineEx(cmndStr): cs.examples.execInsert(execLine=cmndStr)
+    od = collections.OrderedDict
+    cmnd = cs.examples.cmndEnter
+    literal = cs.examples.execInsert
 
-    if sectionTitle == "default":
-        cs.examples.menuChapter('*BxQmail Account And Addrs Utilities*')
+    # perfNamePars = od([('perfName', "HSS-1012"),])
+    #cmnd('cmdbSummary', pars=perfNamePars, comment=" # remote obtain facter data, use it to summarize for cmdb")
 
-    icmWrapper = "" ;  cmndName = "qmailAcctAddr_maildropUpdate"
-    cps = cpsInit() ; cps['qmailAcct'] = "notyet" ; cps['qmailAddr'] = "notyet"
-    cmndArgs = ""
-    cs.examples.cmndInsert(cmndName, cps, cmndArgs, verbosity='none', icmWrapper=icmWrapper)
+    cs.examples.menuChapter('=Qmail Control Programs=')
+
+    cmnd('qmailControl_programs', comment=" # List of programs to which qmailControl FVs apply")
+
+    cs.examples.menuChapter('=Qmail Control Defaults Show=')
+
+    cmnd('qmailControl_defaultsShow', args="all", comment=" # Defaults For: QmailInject, QmailSend")
+    cmnd('qmailControl_defaultsShow', args="QmailInject", comment=" # Defaults For QmailInject")
+    cmnd('qmailControl_defaultsShow', args="QmailSmtpd", comment=" # Defaults For QmailSmtpd")
+
+    cs.examples.menuChapter('=Qmail Control Defaults Set=')
+
+    cmnd('qmailControl_defaultsSet', args="all", comment=" # Defaults For: QmailInject, QmailSend")
+    cmnd('qmailControl_defaultsSet', args="QmailInject", comment=" # Defaults For QmailInject")
+    cmnd('qmailControl_defaultsSet', args="QmailSmtpd", comment=" # Defaults For QmailSmtpd")
+
+    cs.examples.menuChapter('=Qmail File Variables Get Current Values=')
+
+    cmnd('qmailControl_fvsCurGet', args="all", comment=" # Defaults For: QmailInject, QmailSend")
+    cmnd('qmailControl_fvsCurGet', args="QmailInject", comment=" # Defaults For QmailInject")
+    cmnd('qmailControl_fvsCurGet', args="QmailSmtpd", comment=" # Defaults For QmailSmtpd")
+
+    cs.examples.menuChapter('=Qmail File Variable  Get Each=')
+
+    cmnd('qmailControl_fvCurGet', args="me", comment=" # fvName")
+    cmnd('qmailControl_fvCurGet', args="Global me", comment=" # Arg1 is one of: Global, QmailInject, QmailSend")
+
+    cs.examples.menuChapter('=Qmail File Variable Set Each=')
+
+    cmnd('qmailControl_fvCurSet', args="me someValue", comment=" # fvName")
+    cmnd('qmailControl_fvCurSet', args="Global me someValue", comment=" # Arg1 is one of: Global, QmailInject, QmailSend")
+
+    cs.examples.menuChapter('=Qmail File Variable Default Show Each=')
+
+    cmnd('qmailControl_fvDefaultShow', args="me", comment=" # fvName")
+    cmnd('qmailControl_fvDefaultShow', args="Global me", comment=" # Arg1 is one of: Global, QmailInject, QmailSend")
+
+    cs.examples.menuChapter('=Raw Qmail Commands (qmail-showctl)=')
+
+    literal("/var/qmail/bin/qmail-showctl", comment=" # part of qmail")
 
 
 ####+BEGIN: bx:cs:py3:section :title "CS-Commands"
@@ -314,62 +467,88 @@ def examples_csu(
 #+end_org """
 ####+END:
 
-####+BEGIN: b:py3:cs:cmnd/classHead :cmndName "qmailAcctAddr_maildropUpdate" :comment "" :extent "verify" :parsMand "qmailAcct qmailAddr" :argsMin 1 :argsMax 1 :pyInv ""
+
+####+BEGIN: b:py3:cs:cmnd/classHead :cmndName "qmailControl_programs" :comment "" :extent "verify" :parsMand "" :argsMin 0 :argsMax 0 :pyInv ""
 """ #+begin_org
-*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  CmndSvc-   [[elisp:(outline-show-subtree+toggle)][||]] <<qmailAcctAddr_maildropUpdate>>  =verify= parsMand=qmailAcct qmailAddr argsMin=1 argsMax=1 ro=cli   [[elisp:(org-cycle)][| ]]
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  CmndSvc-   [[elisp:(outline-show-subtree+toggle)][||]] <<qmailControl_programs>>  =verify= ro=cli   [[elisp:(org-cycle)][| ]]
 #+end_org """
-class qmailAcctAddr_maildropUpdate(cs.Cmnd):
-    cmndParamsMandatory = [ 'qmailAcct', 'qmailAddr', ]
+class qmailControl_programs(cs.Cmnd):
+    cmndParamsMandatory = [ ]
     cmndParamsOptional = [ ]
-    cmndArgsLen = {'Min': 1, 'Max': 1,}
+    cmndArgsLen = {'Min': 0, 'Max': 0,}
 
     @cs.track(fnLoc=True, fnEntry=True, fnExit=True)
     def cmnd(self,
              rtInv: cs.RtInvoker,
              cmndOutcome: b.op.Outcome,
-             qmailAcct: typing.Optional[str]=None,  # Cs Mandatory Param
-             qmailAddr: typing.Optional[str]=None,  # Cs Mandatory Param
+    ) -> b.op.Outcome:
+
+        failed = b_io.eh.badOutcome
+        callParamsDict = {}
+        if self.invocationValidate(rtInv, cmndOutcome, callParamsDict, None).isProblematic():
+            return failed(cmndOutcome)
+####+END:
+        self.cmndDocStr(f""" #+begin_org
+** [[elisp:(org-cycle)][| *CmndDesc:* | ]]
+*** qmailControl_defaultsShow all /QmailInject
+*** -
+        #+end_org """)
+
+        return(cmndOutcome.set(opResults=controledQmailPrograms()))
+
+
+####+BEGIN: b:py3:cs:cmnd/classHead :cmndName "qmailControl_defaultsShow" :comment "" :extent "verify" :parsMand "" :argsMin 1 :argsMax 9999 :pyInv ""
+""" #+begin_org
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  CmndSvc-   [[elisp:(outline-show-subtree+toggle)][||]] <<qmailControl_defaultsShow>>  =verify= argsMin=1 argsMax=9999 ro=cli   [[elisp:(org-cycle)][| ]]
+#+end_org """
+class qmailControl_defaultsShow(cs.Cmnd):
+    cmndParamsMandatory = [ ]
+    cmndParamsOptional = [ ]
+    cmndArgsLen = {'Min': 1, 'Max': 9999,}
+
+    @cs.track(fnLoc=True, fnEntry=True, fnExit=True)
+    def cmnd(self,
+             rtInv: cs.RtInvoker,
+             cmndOutcome: b.op.Outcome,
              argsList: typing.Optional[list[str]]=None,  # CsArgs
     ) -> b.op.Outcome:
 
-        callParamsDict = {'qmailAcct': qmailAcct, 'qmailAddr': qmailAddr, }
+        failed = b_io.eh.badOutcome
+        callParamsDict = {}
         if self.invocationValidate(rtInv, cmndOutcome, callParamsDict, argsList).isProblematic():
-            return b_io.eh.badOutcome(cmndOutcome)
+            return failed(cmndOutcome)
         cmndArgsSpecDict = self.cmndArgsSpec()
-        qmailAcct = csParam.mappedValue('qmailAcct', qmailAcct)
-        qmailAddr = csParam.mappedValue('qmailAddr', qmailAddr)
 ####+END:
         self.cmndDocStr(f""" #+begin_org
-** [[elisp:(org-cycle)][| *CmndDesc:* | ]] For dotQmail specified by qmailAcct and qmailAddr, update maildrop to maildropQmailAddr.
-*** Make sure that file corresponing to =maildropQmailAddr= exists.
-*** Read in qmailAcctAddr.
-*** Update maildrop line in qmailAcctAddr file.
+** [[elisp:(org-cycle)][| *CmndDesc:* | ]]
+*** qmailControl_defaultsShow all /QmailInject
 *** -
         #+end_org """)
 
         cmndArgsSpecDict = self.cmndArgsSpec()
-        maildropQmailAddr = self.cmndArgsGet("0", cmndArgsSpecDict, argsList)
+        cmndArgs = self.cmndArgsGet("0&9999", cmndArgsSpecDict, argsList)
 
-        qmailAcctAddr = AcctAddr(qmailAcct, qmailAddr)
-        qmailAcctPath = qmailAcctAddr.acctPath()
+        result = "Success"
 
-        maildropRelPath = maildrop.maildropFileName(qmailAddr)
-        maildropPath = qmailAcctPath.joinpath(maildropRelPath)
+        if len(cmndArgs):
+            if cmndArgs[0] == "all":
+                cmndArgsSpec = cmndArgsSpecDict.argPositionFind("0&9999")
+                argChoices = cmndArgsSpec.argChoicesGet()
+                argChoices.pop(0)
+                cmndArgs= argChoices
 
-        if not maildropPath.exists():
-            print(f"Missing {maildropPath}")
-            return b_io.eh.badOutcome(cmndOutcome)
+        for each in cmndArgs:
+            thisModule = sys.modules[__name__]
+            try:
+                eachFvs = getattr(thisModule, f"QCFV_{each}")()
+            except:
+                b_io.eh.problem_usageError(f"{each} -- Un Known")
+                result = "Failure"
+                continue
+            fvs = eachFvs.fvsDict()
+            print(f"* {each} -- {fvs}")
 
-        maildropLine = f"""| maildrop {maildropRelPath}"""
-
-        dotQmailContent = qmailAcctAddr.dotQmailFileContentRead()
-        dotQmailLinesObj = lines.Lines(inContent=dotQmailContent)
-        updatedDotQmailLines = dotQmailLinesObj.addIfNotThere(maildropLine)
-
-        updatedDotQmailContent = '\n'.join(updatedDotQmailLines)
-        qmailAcctAddr.dotQmailFileContentWrite(updatedDotQmailContent)
-
-        return(cmndOutcome)
+        return(cmndOutcome.set(opResults=result))
 
 
 ####+BEGIN: b:py3:cs:method/args :methodName "cmndArgsSpec" :methodType "anyOrNone" :retType "bool" :deco "default" :argsList "self"
@@ -385,12 +564,457 @@ class qmailAcctAddr_maildropUpdate(cs.Cmnd):
 
         cmndArgsSpecDict = cs.arg.CmndArgsSpecDict()
         cmndArgsSpecDict.argsDictAdd(
-            argPosition="0",
-            argName="maildropQmailAddr",
-            argChoices=[],
-            argDescription="Maildrop File Identifier"
+            argPosition="0&9999",
+            argName="cmndArgs",
+            argDefault=None,
+            argChoices=['all',] + controledQmailPrograms(),
+            argDescription="List of qmail Programs"
         )
+
         return cmndArgsSpecDict
+
+####+BEGIN: b:py3:cs:cmnd/classHead :cmndName "qmailControl_defaultsSet" :comment "" :extent "verify" :parsMand "" :argsMin 1 :argsMax 9999 :pyInv ""
+""" #+begin_org
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  CmndSvc-   [[elisp:(outline-show-subtree+toggle)][||]] <<qmailControl_defaultsSet>>  =verify= argsMin=1 argsMax=9999 ro=cli   [[elisp:(org-cycle)][| ]]
+#+end_org """
+class qmailControl_defaultsSet(cs.Cmnd):
+    cmndParamsMandatory = [ ]
+    cmndParamsOptional = [ ]
+    cmndArgsLen = {'Min': 1, 'Max': 9999,}
+
+    @cs.track(fnLoc=True, fnEntry=True, fnExit=True)
+    def cmnd(self,
+             rtInv: cs.RtInvoker,
+             cmndOutcome: b.op.Outcome,
+             argsList: typing.Optional[list[str]]=None,  # CsArgs
+    ) -> b.op.Outcome:
+
+        failed = b_io.eh.badOutcome
+        callParamsDict = {}
+        if self.invocationValidate(rtInv, cmndOutcome, callParamsDict, argsList).isProblematic():
+            return failed(cmndOutcome)
+        cmndArgsSpecDict = self.cmndArgsSpec()
+####+END:
+        self.cmndDocStr(f""" #+begin_org
+** [[elisp:(org-cycle)][| *CmndDesc:* | ]]
+*** qmailControl_defaultsShow all /QmailInject
+*** -
+        #+end_org """)
+
+        cmndArgsSpecDict = self.cmndArgsSpec()
+        cmndArgs = self.cmndArgsGet("0&9999", cmndArgsSpecDict, argsList)
+
+        result = "Success"
+
+        if len(cmndArgs):
+            if cmndArgs[0] == "all":
+                cmndArgsSpec = cmndArgsSpecDict.argPositionFind("0&9999")
+                argChoices = cmndArgsSpec.argChoicesGet()
+                argChoices.pop(0)
+                cmndArgs= argChoices
+
+        for each in cmndArgs:
+            thisModule = sys.modules[__name__]
+            try:
+                eachFvs = getattr(thisModule, f"QCFV_{each}")()
+            except:
+                b_io.eh.problem_usageError(f"{each} -- Un Known")
+                result = "Failure"
+                continue
+            
+            fvsDefault = eachFvs.fvsDict()
+
+            qmailControlFV = QmailControlFV()
+            qmailControlFV.fvsDictSet(fvsDefault)
+
+            print(f"* Setting Defaults For {each}")
+
+        return(cmndOutcome.set(opResults=result))
+
+
+####+BEGIN: b:py3:cs:method/args :methodName "cmndArgsSpec" :methodType "anyOrNone" :retType "bool" :deco "default" :argsList "self"
+    """ #+begin_org
+**  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  Mtd-T-anyOrNone [[elisp:(outline-show-subtree+toggle)][||]] /cmndArgsSpec/ deco=default  deco=default   [[elisp:(org-cycle)][| ]]
+    #+end_org """
+    @cs.track(fnLoc=True, fnEntry=True, fnExit=True)
+    def cmndArgsSpec(self, ):
+####+END:
+        """  #+begin_org
+** [[elisp:(org-cycle)][| *cmndArgsSpec:* | ]]
+        #+end_org """
+
+        cmndArgsSpecDict = cs.arg.CmndArgsSpecDict()
+        cmndArgsSpecDict.argsDictAdd(
+            argPosition="0&9999",
+            argName="cmndArgs",
+            argDefault=None,
+            argChoices=['all',] + controledQmailPrograms(),
+            argDescription="List of qmail Programs"
+        )
+
+        return cmndArgsSpecDict
+
+
+####+BEGIN: b:py3:cs:cmnd/classHead :cmndName "qmailControl_fvsCurGet" :comment "" :extent "verify" :parsMand "" :argsMin 1 :argsMax 9999 :pyInv ""
+""" #+begin_org
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  CmndSvc-   [[elisp:(outline-show-subtree+toggle)][||]] <<qmailControl_fvsCurGet>>  =verify= argsMin=1 argsMax=9999 ro=cli   [[elisp:(org-cycle)][| ]]
+#+end_org """
+class qmailControl_fvsCurGet(cs.Cmnd):
+    cmndParamsMandatory = [ ]
+    cmndParamsOptional = [ ]
+    cmndArgsLen = {'Min': 1, 'Max': 9999,}
+
+    @cs.track(fnLoc=True, fnEntry=True, fnExit=True)
+    def cmnd(self,
+             rtInv: cs.RtInvoker,
+             cmndOutcome: b.op.Outcome,
+             argsList: typing.Optional[list[str]]=None,  # CsArgs
+    ) -> b.op.Outcome:
+
+        failed = b_io.eh.badOutcome
+        callParamsDict = {}
+        if self.invocationValidate(rtInv, cmndOutcome, callParamsDict, argsList).isProblematic():
+            return failed(cmndOutcome)
+        cmndArgsSpecDict = self.cmndArgsSpec()
+####+END:
+        self.cmndDocStr(f""" #+begin_org
+** [[elisp:(org-cycle)][| *CmndDesc:* | ]]
+*** qmailControl_defaultsShow all /QmailInject
+*** -
+        #+end_org """)
+
+        cmndArgsSpecDict = self.cmndArgsSpec()
+        cmndArgs = self.cmndArgsGet("0&9999", cmndArgsSpecDict, argsList)
+
+        result = "Success"
+
+        if len(cmndArgs):
+            if cmndArgs[0] == "all":
+                cmndArgsSpec = cmndArgsSpecDict.argPositionFind("0&9999")
+                argChoices = cmndArgsSpec.argChoicesGet()
+                argChoices.pop(0)
+                cmndArgs= argChoices
+
+        for each in cmndArgs:
+            thisModule = sys.modules[__name__]
+            try:
+                eachFvs = getattr(thisModule, f"QCFV_{each}")()
+            except:
+                b_io.eh.problem_usageError(f"{each} -- Un Known")
+                result = "Failure"
+                continue
+            fvs = eachFvs.fvsDictCurGet(eachFvs.fvsDict())
+            print(f"* {each} -- {fvs}")
+
+        return(cmndOutcome.set(opResults=result))
+
+
+####+BEGIN: b:py3:cs:method/args :methodName "cmndArgsSpec" :methodType "anyOrNone" :retType "bool" :deco "default" :argsList "self"
+    """ #+begin_org
+**  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  Mtd-T-anyOrNone [[elisp:(outline-show-subtree+toggle)][||]] /cmndArgsSpec/ deco=default  deco=default   [[elisp:(org-cycle)][| ]]
+    #+end_org """
+    @cs.track(fnLoc=True, fnEntry=True, fnExit=True)
+    def cmndArgsSpec(self, ):
+####+END:
+        """  #+begin_org
+** [[elisp:(org-cycle)][| *cmndArgsSpec:* | ]]
+        #+end_org """
+
+        cmndArgsSpecDict = cs.arg.CmndArgsSpecDict()
+        cmndArgsSpecDict.argsDictAdd(
+            argPosition="0&9999",
+            argName="cmndArgs",
+            argDefault=None,
+            argChoices=['all', 'QmailInject', 'QmailSend',],
+            argDescription="List of qmail Programs"
+        )
+
+        return cmndArgsSpecDict
+
+
+####+BEGIN: b:py3:cs:cmnd/classHead :cmndName "qmailControl_fvCurGet" :comment "" :extent "verify" :parsMand "" :argsMin 1 :argsMax 2 :pyInv ""
+""" #+begin_org
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  CmndSvc-   [[elisp:(outline-show-subtree+toggle)][||]] <<qmailControl_fvCurGet>>  =verify= argsMin=1 argsMax=9999 ro=cli   [[elisp:(org-cycle)][| ]]
+#+end_org """
+class qmailControl_fvCurGet(cs.Cmnd):
+    cmndParamsMandatory = [ ]
+    cmndParamsOptional = [ ]
+    cmndArgsLen = {'Min': 1, 'Max': 9999,}
+
+    @cs.track(fnLoc=True, fnEntry=True, fnExit=True)
+    def cmnd(self,
+             rtInv: cs.RtInvoker,
+             cmndOutcome: b.op.Outcome,
+             argsList: typing.Optional[list[str]]=None,  # CsArgs
+    ) -> b.op.Outcome:
+
+        failed = b_io.eh.badOutcome
+        callParamsDict = {}
+        if self.invocationValidate(rtInv, cmndOutcome, callParamsDict, argsList).isProblematic():
+            return failed(cmndOutcome)
+        cmndArgsSpecDict = self.cmndArgsSpec()
+####+END:
+        self.cmndDocStr(f""" #+begin_org
+** [[elisp:(org-cycle)][| *CmndDesc:* | ]]
+*** qmailControl_defaultsShow all /QmailInject
+*** -
+        #+end_org """)
+
+        cmndArgsSpecDict = self.cmndArgsSpec()
+        cmndArgs = self.cmndArgsGet("0&2", cmndArgsSpecDict, argsList)
+
+        qmailProgName: str | None  = None
+
+        if len(cmndArgs) == 2:
+            qmailProgName = cmndArgs[0]
+            fvName = cmndArgs[1]
+        elif len(cmndArgs) == 1:
+            fvName = cmndArgs[0]
+        else:
+            b_io.eh.critical_oops()
+
+        if qmailProgName is not None:
+            # Validate if fvName is one of qmailProgName
+            thisModule = sys.modules[__name__]
+            try:
+                defaultFvs = getattr(thisModule, f"QCFV_{qmailProgName}")()
+            except:
+                b_io.eh.problem_usageError(f"{qmailProgName} -- Un-Known qmailProgramName")
+                return(cmndOutcome.set(opResults=None))
+            else:
+                if not fvName in defaultFvs.fvsDict():
+                    b_io.eh.problem_usageError(f"{fvName} is not a File Variable of {qmailProgName}")
+                    return(cmndOutcome.set(opResults=None))
+
+        qmailControlFV = QmailControlFV()
+        result = qmailControlFV.fvGet(fvName)
+
+        return(cmndOutcome.set(opResults=result))
+
+
+####+BEGIN: b:py3:cs:method/args :methodName "cmndArgsSpec" :methodType "anyOrNone" :retType "bool" :deco "default" :argsList "self"
+    """ #+begin_org
+**  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  Mtd-T-anyOrNone [[elisp:(outline-show-subtree+toggle)][||]] /cmndArgsSpec/ deco=default  deco=default   [[elisp:(org-cycle)][| ]]
+    #+end_org """
+    @cs.track(fnLoc=True, fnEntry=True, fnExit=True)
+    def cmndArgsSpec(self, ):
+####+END:
+        """  #+begin_org
+** [[elisp:(org-cycle)][| *cmndArgsSpec:* | ]]
+        #+end_org """
+
+        cmndArgsSpecDict = cs.arg.CmndArgsSpecDict()
+        cmndArgsSpecDict.argsDictAdd(
+            argPosition="0&1",
+            argName="progOrFvName",
+            argDefault=None,
+            argChoices=[],
+            argDescription=""
+        )
+        cmndArgsSpecDict.argsDictAdd(
+            argPosition="1&2",
+            argName="fvName",
+            argDefault=None,
+            argChoices=[],
+            argDescription=""
+        )
+
+        return cmndArgsSpecDict
+
+
+
+####+BEGIN: b:py3:cs:cmnd/classHead :cmndName "qmailControl_fvCurSet" :comment "" :extent "verify" :parsMand "" :argsMin 2 :argsMax 3 :pyInv ""
+""" #+begin_org
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  CmndSvc-   [[elisp:(outline-show-subtree+toggle)][||]] <<qmailControl_fvCurSet>>  =verify= argsMin=2 argsMax=3 ro=cli   [[elisp:(org-cycle)][| ]]
+#+end_org """
+class qmailControl_fvCurSet(cs.Cmnd):
+    cmndParamsMandatory = [ ]
+    cmndParamsOptional = [ ]
+    cmndArgsLen = {'Min': 2, 'Max': 3,}
+
+    @cs.track(fnLoc=True, fnEntry=True, fnExit=True)
+    def cmnd(self,
+             rtInv: cs.RtInvoker,
+             cmndOutcome: b.op.Outcome,
+             argsList: typing.Optional[list[str]]=None,  # CsArgs
+    ) -> b.op.Outcome:
+
+        failed = b_io.eh.badOutcome
+        callParamsDict = {}
+        if self.invocationValidate(rtInv, cmndOutcome, callParamsDict, argsList).isProblematic():
+            return failed(cmndOutcome)
+        cmndArgsSpecDict = self.cmndArgsSpec()
+####+END:
+        self.cmndDocStr(f""" #+begin_org
+** [[elisp:(org-cycle)][| *CmndDesc:* | ]]
+*** qmailControl_defaultsShow all /QmailInject
+*** -
+        #+end_org """)
+
+        cmndArgsSpecDict = self.cmndArgsSpec()
+        cmndArgs = self.cmndArgsGet("0&3", cmndArgsSpecDict, argsList)
+
+        qmailProgName: str | None  = None
+
+        if len(cmndArgs) == 3:
+            qmailProgName = cmndArgs[0]
+            fvName = cmndArgs[1]
+            fvValue = cmndArgs[2]
+        elif len(cmndArgs) == 2:
+            fvName = cmndArgs[0]
+            fvValue = cmndArgs[1]
+        else:
+            b_io.eh.critical_oops()
+
+        if qmailProgName is not None:
+            # Validate if fvName is one of qmailProgName
+            thisModule = sys.modules[__name__]
+            try:
+                defaultFvs = getattr(thisModule, f"QCFV_{qmailProgName}")()
+            except:
+                b_io.eh.problem_usageError(f"{qmailProgName} -- Un-Known qmailProgramName")
+                return(cmndOutcome.set(opResults=None))
+            else:
+                if not fvName in defaultFvs.fvsDict():
+                    b_io.eh.problem_usageError(f"{fvName} is not a File Variable of {qmailProgName}")
+                    return(cmndOutcome.set(opResults=None))
+
+        qmailControlFV = QmailControlFV()
+        result = qmailControlFV.fvSet(fvName, fvValue)
+
+        return(cmndOutcome.set(opResults=result))
+
+
+####+BEGIN: b:py3:cs:method/args :methodName "cmndArgsSpec" :methodType "anyOrNone" :retType "bool" :deco "default" :argsList "self"
+    """ #+begin_org
+**  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  Mtd-T-anyOrNone [[elisp:(outline-show-subtree+toggle)][||]] /cmndArgsSpec/ deco=default  deco=default   [[elisp:(org-cycle)][| ]]
+    #+end_org """
+    @cs.track(fnLoc=True, fnEntry=True, fnExit=True)
+    def cmndArgsSpec(self, ):
+####+END:
+        """  #+begin_org
+** [[elisp:(org-cycle)][| *cmndArgsSpec:* | ]]
+        #+end_org """
+
+        cmndArgsSpecDict = cs.arg.CmndArgsSpecDict()
+        cmndArgsSpecDict.argsDictAdd(
+            argPosition="0&1",
+            argName="progOrFvName",
+            argDefault=None,
+            argChoices=[],
+            argDescription=""
+        )
+        cmndArgsSpecDict.argsDictAdd(
+            argPosition="1&3",
+            argName="fvName",
+            argDefault=None,
+            argChoices=[],
+            argDescription=""
+        )
+
+        return cmndArgsSpecDict
+
+
+####+BEGIN: b:py3:cs:cmnd/classHead :cmndName "qmailControl_fvDefaultShow" :comment "" :extent "verify" :parsMand "" :argsMin 1 :argsMax 2 :pyInv ""
+""" #+begin_org
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  CmndSvc-   [[elisp:(outline-show-subtree+toggle)][||]] <<qmailControl_fvDefaultShow>>  =verify= argsMin=1 argsMax=2 ro=cli   [[elisp:(org-cycle)][| ]]
+#+end_org """
+class qmailControl_fvDefaultShow(cs.Cmnd):
+    cmndParamsMandatory = [ ]
+    cmndParamsOptional = [ ]
+    cmndArgsLen = {'Min': 1, 'Max': 2,}
+
+    @cs.track(fnLoc=True, fnEntry=True, fnExit=True)
+    def cmnd(self,
+             rtInv: cs.RtInvoker,
+             cmndOutcome: b.op.Outcome,
+             argsList: typing.Optional[list[str]]=None,  # CsArgs
+    ) -> b.op.Outcome:
+
+        failed = b_io.eh.badOutcome
+        callParamsDict = {}
+        if self.invocationValidate(rtInv, cmndOutcome, callParamsDict, argsList).isProblematic():
+            return failed(cmndOutcome)
+        cmndArgsSpecDict = self.cmndArgsSpec()
+####+END:
+        self.cmndDocStr(f""" #+begin_org
+** [[elisp:(org-cycle)][| *CmndDesc:* | ]]
+*** qmailControl_defaultsShow all /QmailInject
+*** -
+        #+end_org """)
+
+        cmndArgsSpecDict = self.cmndArgsSpec()
+        cmndArgs = self.cmndArgsGet("0&2", cmndArgsSpecDict, argsList)
+
+        result = "Success"
+
+        qmailProgName: str | None  = None
+
+        if len(cmndArgs) == 2:
+            qmailProgName = cmndArgs[0]
+            fvName = cmndArgs[1]
+        elif len(cmndArgs) == 1:
+            fvName = cmndArgs[0]
+        else:
+            b_io.eh.critical_oops()
+
+        if qmailProgName is not None:
+            # Validate if fvName is one of qmailProgName
+            thisModule = sys.modules[__name__]
+            try:
+                defaultFvs = getattr(thisModule, f"QCFV_{qmailProgName}")()
+            except:
+                b_io.eh.problem_usageError(f"{qmailProgName} -- Un-Known qmailProgramName")
+                return(cmndOutcome.set(opResults=None))
+            else:
+                if not fvName in defaultFvs.fvsDict():
+                    b_io.eh.problem_usageError(f"{fvName} is not a File Variable of {qmailProgName}")
+                    return(cmndOutcome.set(opResults=None))
+
+        for each in controledQmailPrograms():
+            thisModule = sys.modules[__name__]
+            try:
+                eachFvs = getattr(thisModule, f"QCFV_{each}")()
+            except:
+                b_io.eh.problem_usageError(f"{each} -- Un Known")
+                result = "Failure"
+                continue
+            fvs = eachFvs.fvsDict()
+            if fvName in fvs:
+                print(f"* {each} -- {fvName} {fvs[fvName]}")
+
+        return(cmndOutcome.set(opResults=result))
+
+
+####+BEGIN: b:py3:cs:method/args :methodName "cmndArgsSpec" :methodType "anyOrNone" :retType "bool" :deco "default" :argsList "self"
+    """ #+begin_org
+**  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  Mtd-T-anyOrNone [[elisp:(outline-show-subtree+toggle)][||]] /cmndArgsSpec/ deco=default  deco=default   [[elisp:(org-cycle)][| ]]
+    #+end_org """
+    @cs.track(fnLoc=True, fnEntry=True, fnExit=True)
+    def cmndArgsSpec(self, ):
+####+END:
+        """  #+begin_org
+** [[elisp:(org-cycle)][| *cmndArgsSpec:* | ]]
+        #+end_org """
+
+        cmndArgsSpecDict = cs.arg.CmndArgsSpecDict()
+        cmndArgsSpecDict.argsDictAdd(
+            argPosition="0&1",
+            argName="progOrFvName",
+            argDefault=None,
+            argChoices=[],
+            argDescription=""
+        )
+        cmndArgsSpecDict.argsDictAdd(
+            argPosition="1&2",
+            argName="fvName",
+            argDefault=None,
+            argChoices=[],
+            argDescription=""
+        )
+
+        return cmndArgsSpecDict
+
 
 
 ####+BEGIN: b:py3:cs:framework/endOfFile :basedOn "classification"
