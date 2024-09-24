@@ -91,7 +91,7 @@ import collections
 # from bisos.currents import currentsConfig
 
 # from bisos.debian import configFile
-from bisos.qmail import qmailSysd
+from bisos.qmail import notqmailSysd
 
 
 # from bisos.bpo import bpo
@@ -103,8 +103,8 @@ from bisos.qmail import qmailSysd
 #+end_org """
 ####+END:
 
-sysdConfigQmail = qmailSysd.sysdConfigQmail
-sysdUnitQmail = qmailSysd.sysdUnitQmail
+# sysdConfigQmail = notqmailSysd.sysdConfigQmail
+sysdUnitNotQmail = notqmailSysd.sysdUnitNotQmail
 
 """ #+begin_org
 *  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  CsFrmWrk   [[elisp:(outline-show-subtree+toggle)][||]] ~csuList emacs-list Specifications~  [[elisp:(blee:org:code-block/above-run)][ /Eval Below/ ]] [[elisp:(org-cycle)][| ]]
@@ -116,11 +116,11 @@ sysdUnitQmail = qmailSysd.sysdUnitQmail
    "bisos.b.clsMethod_csu"
    "bisos.debian.configFile"
    "bisos.debian.bifSystemd"
-   "bisos.qmail.qmailSysd"
+   "bisos.qmail.notqmailSysd"
  ))
 #+END_SRC
 #+RESULTS:
-| bisos.b.cs.ro | blee.icmPlayer.bleep | bisos.b.clsMethod_csu | bisos.debian.configFile | bisos.debian.bifSystemd | bisos.qmail.qmailSysd |
+| bisos.b.cs.ro | blee.icmPlayer.bleep | bisos.b.clsMethod_csu | bisos.debian.configFile | bisos.debian.bifSystemd | bisos.qmail.notqmailSysd |
 #+end_org """
 
 ####+BEGIN: b:py3:cs:framework/csuListProc :pyImports t :csuImports t :csuParams t
@@ -133,10 +133,10 @@ from blee.icmPlayer import bleep
 from bisos.b import clsMethod_csu
 from bisos.debian import configFile
 from bisos.debian import bifSystemd
-from bisos.qmail import qmailSysd
+from bisos.qmail import notqmailSysd
 
 
-csuList = [ 'bisos.b.cs.ro', 'blee.icmPlayer.bleep', 'bisos.b.clsMethod_csu', 'bisos.debian.configFile', 'bisos.debian.bifSystemd', 'bisos.qmail.qmailSysd', ]
+csuList = [ 'bisos.b.cs.ro', 'blee.icmPlayer.bleep', 'bisos.b.clsMethod_csu', 'bisos.debian.configFile', 'bisos.debian.bifSystemd', 'bisos.qmail.notqmailSysd', ]
 
 g_importedCmndsModules = cs.csuList_importedModules(csuList)
 
@@ -185,7 +185,7 @@ class examples(cs.Cmnd):
         # cs.examples.menuChapter('*Currents Examples Settings*')
         # cur_examples()
 
-        qmailSysd.examples_csu(sectionTitle="default")
+        notqmailSysd.examples_csu(sectionTitle="default")
 
         return(cmndOutcome)
 
