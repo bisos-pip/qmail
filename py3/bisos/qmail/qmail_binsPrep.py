@@ -81,6 +81,8 @@ from bisos.common import csParam
 import collections
 ####+END:
 
+import pathlib
+
 ####+BEGIN: b:py3:cs:orgItem/section :title "CSU-Lib Examples" :comment "-- Providing examples_csu"
 """ #+begin_org
 *  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  /Section/    [[elisp:(outline-show-subtree+toggle)][||]] *CSU-Lib Examples* -- Providing examples_csu  [[elisp:(org-cycle)][| ]]
@@ -106,7 +108,7 @@ def examples_csu(
     if sectionTitle == 'default':
         cs.examples.menuChapter('*Marmee Qmail Bins Preps*')
 
-    icmWrapper = "" ;  cmndName = "qmailRemoteReplace"
+    icmWrapper = "" ;  cmndName = "notqmailOnDeb12"
     cps = cpsInit() ;  cmndArgs = "" ;
     cs.examples.cmndInsert(cmndName, cps, cmndArgs, verbosity='none', icmWrapper=icmWrapper)
 
@@ -119,6 +121,53 @@ def examples_csu(
 *  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*     [[elisp:(outline-show-subtree+toggle)][| _CmndSvcs_: |]]  Command Services Section  [[elisp:(org-shifttab)][<)]] E|
 #+end_org """
 ####+END:
+
+
+####+BEGIN: b:py3:cs:cmnd/classHead :cmndName "notqmailOnDeb12" :comment "" :extent "verify" :parsMand "" :argsMin 0 :argsMax 0 :pyInv ""
+""" #+begin_org
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  CmndSvc-   [[elisp:(outline-show-subtree+toggle)][||]] <<notqmailOnDeb12>>  =verify= ro=cli   [[elisp:(org-cycle)][| ]]
+#+end_org """
+class notqmailOnDeb12(cs.Cmnd):
+    cmndParamsMandatory = [ ]
+    cmndParamsOptional = [ ]
+    cmndArgsLen = {'Min': 0, 'Max': 0,}
+
+    @cs.track(fnLoc=True, fnEntry=True, fnExit=True)
+    def cmnd(self,
+             rtInv: cs.RtInvoker,
+             cmndOutcome: b.op.Outcome,
+    ) -> b.op.Outcome:
+
+        failed = b_io.eh.badOutcome
+        callParamsDict = {}
+        if self.invocationValidate(rtInv, cmndOutcome, callParamsDict, None).isProblematic():
+            return failed(cmndOutcome)
+####+END:
+        self.cmndDocStr(f""" #+begin_org
+** [[elisp:(org-cycle)][| *CmndDesc:* | ]]
+*** qmailBinsPrep
+*** mailTools ---
+        #+end_org """)
+
+        # If installed and no force don't do anything.
+
+        debPkgUrl = "https://download.opensuse.org/repositories/home:/notqmail/Debian_12/amd64/notqmail_1.09-1.1+1.3_amd64.deb"
+        ignored,ignored_2,debPkgFile = debPkgUrl.rpartition('/')
+
+        obtainBaseDir = pathlib.Path("/bisos/var/srcPkgs/notqmail")
+        obtainBaseDir.mkdir(parents=True, exist_ok=True)
+
+        if b.subProc.WOpW(invedBy=self, cd=obtainBaseDir, log=1).bash(
+                f"""wget {debPkgUrl}""",
+        ).isProblematic():  return(b_io.eh.badOutcome(cmndOutcome))
+
+        if b.subProc.WOpW(invedBy=self, cd=obtainBaseDir, uid="root", log=1).bash(
+                f"""echo deb install  {debPkgFile}""",
+        ).isProblematic():  return(b_io.eh.badOutcome(cmndOutcome))
+
+        return(cmndOutcome)
+
+
 
 
 ####+BEGIN: b:py3:cs:cmnd/classHead :cmndName "qmailRemoteReplace" :comment "" :extent "verify" :parsMand "" :argsMin 0 :argsMax 0 :pyInv ""
@@ -149,6 +198,8 @@ class qmailRemoteReplace(cs.Cmnd):
         print(self.docStrCmndMethod())
 
         return(cmndOutcome)
+
+        # NOTYET --- HAS NOT BEEN TESTED
 
         qmailRemoteCmnd = shutil.which("qmail-remote")
         qmailRemoteBasicCmndPath = shutil.which("qmail-remote-basic")

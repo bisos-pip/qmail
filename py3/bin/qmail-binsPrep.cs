@@ -8,7 +8,14 @@
 #+end_org """
 ####+END:
 
+from bisos import b
+from bisos.b import cs
+from bisos.b import b_io
+
 from bisos.qmail import qmail_binsPrep
+
+cs.csuList_importedModules(['bisos.qmail.qmail_binsPrep'])
+
 
 from bisos.binsprep import binsprep
 ap = binsprep.aptPkg
