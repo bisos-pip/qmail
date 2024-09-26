@@ -39,7 +39,6 @@
 #+end_org """
 import typing
 
-from bisos.qmail.qmailRemote import qmailRemote
 csInfo: typing.Dict[str, typing.Any] = { 'moduleName': ['qmailRemote'], }
 csInfo['version'] = '202212122335'
 csInfo['status']  = 'inUse'
@@ -107,7 +106,7 @@ from bisos.marmee import aasMailFps
 from bisos.marmee import gmailOauth2
 from bisos.marmee import x822Lib
 
-from bisos.qmail import qmailRemote
+from bisos.qmail import qmailRemoteWrapper
 
 import sys
 import pwd
@@ -244,7 +243,7 @@ def handOffToMetaQmailQueue(
         injectionProgramCmnd =  "qmail-remote-bisos.cs"
         injectionProgramArgs =  qmailRemoteArgs
     elif metaQmailQueueOfQmailInject == MetaQmailQueueOfQmailInject.pythonQmailRemote.value[0]:
-        qmailRemote.qmailRemoteWithMsg(msg, qmailRemoteArgs)
+        qmailRemoteWrapper.qmailRemoteWithMsg(msg, qmailRemoteArgs)
     else:
         print(f"NOTYET {metaQmailQueueOfQmailInject}")
         return(b_io.eh.badOutcome(outcome))
