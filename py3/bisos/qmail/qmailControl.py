@@ -99,9 +99,6 @@ from bisos.common import csParam
 
 from bisos.qmail import maildrop
 
-from bisos.b import pyRunAs
-from bisos.common import lines
-
 import enum
 
 

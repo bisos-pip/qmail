@@ -101,7 +101,7 @@ from bisos.common import csParam
 from bisos.marmee import aasInMailFps
 from bisos.marmee import aasOutMailFps
 
-from bisos.b import pyRunAs
+from bisos.basics import pyRunAs
 
 from bisos.qmail import qmailOrAcct
 

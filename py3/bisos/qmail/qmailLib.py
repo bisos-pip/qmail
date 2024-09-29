@@ -96,11 +96,14 @@ from bisos.common import csParam
 
 from bisos.qmail import maildrop
 
-from bisos.b import pyRunAs
+from bisos.basics import pyRunAs
 from bisos.common import lines
 
 import enum
 import pathlib
+
+import pwd
+
 
 ####+BEGIN: bx:dblock:python:section :title "Enumerations"
 """
@@ -195,6 +198,19 @@ class QmailInstallationSingleton(object):
     def varDir(self) -> pathlib.Path:
         return self._varDir
 
+    @property
+    def binBaseDir(self) -> pathlib.Path:
+        return self._binBaseDir
+
+    @property
+    def controlBaseDir(self) -> pathlib.Path:
+        return self._controlBaseDir
+
+    @property
+    def usersBaseDir(self) -> pathlib.Path:
+        return self._usersBaseDir
+
+
 installation = QmailInstallationSingleton()
 
 
@@ -213,6 +229,29 @@ class LocalDeliveryAcct(object):
     ):
         pass
 
+####+BEGIN: b:py3:cs:method/typing :methodName "prep" :deco "staticmethod"
+    """ #+begin_org
+**  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  Mtd-T-     [[elisp:(outline-show-subtree+toggle)][||]] /prep/  deco=staticmethod  [[elisp:(org-cycle)][| ]]
+    #+end_org """
+    @staticmethod
+    def prep(
+####+END:
+    )-> b.op.Outcome:
+        outcome = b.op.Outcome()
+
+        if installation.usersBaseDir.is_dir():
+            return outcome
+
+        pyRunAs.as_root_osSystem(
+            f"""mkdir {str(installation.usersBaseDir)}"""
+        )
+        pyRunAs.as_root_osSystem(
+            f"""chmod 755 {str(installation.usersBaseDir)}"""
+        )
+        
+        return outcome
+
+
 ####+BEGIN: b:py3:cs:method/typing :methodName "newUserProc" :deco "staticmethod"
     """ #+begin_org
 **  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  Mtd-T-     [[elisp:(outline-show-subtree+toggle)][||]] /newUserProc/  deco=staticmethod  [[elisp:(org-cycle)][| ]]
@@ -224,7 +263,7 @@ class LocalDeliveryAcct(object):
         outcome = b.op.Outcome()
 
         if b.subProc.Op(outcome=outcome, uid="root", log=1).bash(
-                f"""\
+                """\
  print "Running ${qmailPw2uProgram}"
  eval cat /etc/passwd \| ${qmailPw2uProgram}  \> ${qmailUsersBaseDir}/assign
 
@@ -234,7 +273,7 @@ ${qmailNewuProgram}
     # print "pkill -HUP 'qmail-send'"
     # opDo pkill -HUP 'qmail-send'
 """,
-        ).isProblematic():  return(b_io.eh.badOutcome(outcome)
+        ).isProblematic():  return(b_io.eh.badOutcome(outcome))
         return outcome
 
 ####+BEGIN: b:py3:cs:method/typing :methodName "add" :deco "staticmethod"
@@ -248,6 +287,18 @@ ${qmailNewuProgram}
     )-> b.op.Outcome:
         outcome = b.op.Outcome()
 
+        try:
+            pwd.getpwnam(user)
+        except KeyError:
+            outcome.error = 1
+            outcome.errInfo = "Missing Passwd Account"
+            return outcome
+
+        print("HEREHERE")
+
+        return outcome
+
+
         if b.subProc.Op(outcome=outcome, uid="root", log=1).bash(
                 f"""\
    if USER_isInPasswdFile ${1} ; then
@@ -259,7 +310,7 @@ ${qmailNewuProgram}
     print "$0: Skipping ${1} because it is not in the passwd file"
   fi
 """,
-        ).isProblematic():  return(b_io.eh.badOutcome(outcome)
+        ).isProblematic():  return(b_io.eh.badOutcome(outcome))
         return outcome
 
 ####+BEGIN: b:py3:cs:method/typing :methodName "delete" :deco "staticmethod"
@@ -286,7 +337,7 @@ ${qmailNewuProgram}
   return 0
 
 """,
-        ).isProblematic():  return(b_io.eh.badOutcome(outcome)
+        ).isProblematic():  return(b_io.eh.badOutcome(outcome))
         return outcome
 
 ####+BEGIN: b:py3:cs:method/typing :methodName "verify" :deco "staticmethod"
@@ -310,7 +361,7 @@ ${qmailNewuProgram}
   fi
 
 """,
-        ).isProblematic():  return(b_io.eh.badOutcome(outcome)
+        ).isProblematic():  return(b_io.eh.badOutcome(outcome))
         return outcome
 
 ####+BEGIN: b:py3:cs:method/typing :methodName "domainGet" :deco "staticmethod"
@@ -327,10 +378,8 @@ ${qmailNewuProgram}
                 f"""\
   head -1 ${qmailControlBaseDir}/locals
 """,
-        ).isProblematic():  return(b_io.eh.badOutcome(outcome)
+        ).isProblematic():  return(b_io.eh.badOutcome(outcome))
         return outcome
-
-
 
 
 
@@ -469,7 +518,7 @@ class VirDomEntry(object):
   print "pkill -HUP 'qmail-send'"
   pkill -HUP 'qmail-send'
 """,
-        ).isProblematic():  return(b_io.eh.badOutcome(outcome)
+        ).isProblematic():  return(b_io.eh.badOutcome(outcome))
         return outcome
 
 ####+BEGIN: b:py3:cs:method/typing :methodName "delete" :deco "staticmethod"
@@ -498,7 +547,7 @@ class VirDomEntry(object):
   print "pkill -HUP 'qmail-send'"
   pkill -HUP 'qmail-send'
 """,
-        ).isProblematic():  return(b_io.eh.badOutcome(outcome)
+        ).isProblematic():  return(b_io.eh.badOutcome(outcome))
         return outcome
 
 
@@ -524,7 +573,7 @@ class VirDomEntry(object):
 
   print ${acctName}
 """,
-        ).isProblematic():  return(b_io.eh.badOutcome(outcome)
+        ).isProblematic():  return(b_io.eh.badOutcome(outcome))
         return outcome
 
 ####+BEGIN: b:py3:cs:method/typing :methodName "domainGet" :deco "staticmethod"
@@ -549,7 +598,7 @@ class VirDomEntry(object):
 
   print ${domainName}
 """,
-        ).isProblematic():  return(b_io.eh.badOutcome(outcome)
+        ).isProblematic():  return(b_io.eh.badOutcome(outcome))
         return outcome
 
 
@@ -585,7 +634,7 @@ class RcpthostsEntry(object):
   FN_lineAddToFile "^${1}\$" "${1}"  ${qmailControlBaseDir}/rcpthosts
 
 """,
-        ).isProblematic():  return(b_io.eh.badOutcome(outcome)
+        ).isProblematic():  return(b_io.eh.badOutcome(outcome))
         return outcome
 
 ####+BEGIN: b:py3:cs:method/typing :methodName "delete" :deco "staticmethod"
@@ -603,7 +652,7 @@ class RcpthostsEntry(object):
                 f"""\
   FN_lineRemoveFromFile "^${1}\$" ${qmailControlBaseDir}/rcpthosts
 """,
-        ).isProblematic():  return(b_io.eh.badOutcome(outcome)
+        ).isProblematic():  return(b_io.eh.badOutcome(outcome))
         return outcome
 
 ####+BEGIN: b:py3:cs:method/typing :methodName "verify" :deco "staticmethod"
@@ -621,7 +670,7 @@ class RcpthostsEntry(object):
                 f"""\
 echo NOTYET
 """,
-        ).isProblematic():  return(b_io.eh.badOutcome(outcome)
+        ).isProblematic():  return(b_io.eh.badOutcome(outcome))
         return outcome
 
 ####+BEGIN: b:py3:class/decl :className "VirDom" :superClass "object" :comment "Abstraction of a qmail delivery account a set of statics" :classType "basic"
@@ -657,7 +706,7 @@ class VirDom(object):
   opDoRet mmaQmailVirDomEntryAdd ${1} ${2}
   opDoRet mmaQmailRcpthostsEntryAdd ${1}
 """,
-        ).isProblematic():  return(b_io.eh.badOutcome(outcome)
+        ).isProblematic():  return(b_io.eh.badOutcome(outcome))
         return outcome
 
 ####+BEGIN: b:py3:cs:method/typing :methodName "delete" :deco "staticmethod"
@@ -678,7 +727,7 @@ class VirDom(object):
   opDoRet mmaQmailVirDomEntryDelete ${1} ${2}
   opDoRet mmaQmailRcpthostsEntryDelete ${1}
  """,
-        ).isProblematic():  return(b_io.eh.badOutcome(outcome)
+        ).isProblematic():  return(b_io.eh.badOutcome(outcome))
         return outcome
 
 
@@ -704,7 +753,7 @@ class VirDom(object):
 
   print ${acctName}
 """,
-        ).isProblematic():  return(b_io.eh.badOutcome(outcome)
+        ).isProblematic():  return(b_io.eh.badOutcome(outcome))
         return outcome
 
 ####+BEGIN: b:py3:cs:method/typing :methodName "domainGet" :deco "staticmethod"
@@ -729,171 +778,9 @@ class VirDom(object):
 
   print ${domainName}
 """,
-        ).isProblematic():  return(b_io.eh.badOutcome(outcome)
+        ).isProblematic():  return(b_io.eh.badOutcome(outcome))
         return outcome
 
-
-
-
-####+BEGIN: bx:cs:py3:section :title "Public Functions"
-""" #+begin_org
-*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  /Section/    [[elisp:(outline-show-subtree+toggle)][||]] *Public Functions*  [[elisp:(org-cycle)][| ]]
-#+end_org """
-####+END:
-
-####+BEGIN: bx:cs:py3:section :title "Common Parameters Specification"
-""" #+begin_org
-*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  /Section/    [[elisp:(outline-show-subtree+toggle)][||]] *Common Parameters Specification*  [[elisp:(org-cycle)][| ]]
-#+end_org """
-####+END:
-
-####+BEGIN: bx:dblock:python:func :funcName "commonParamsSpecify" :funcType "ParSpec" :retType "" :deco "" :argsList "csParams"
-""" #+begin_org
-*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  F-ParSpec  [[elisp:(outline-show-subtree+toggle)][||]] /commonParamsSpecify/ retType= argsList=(csParams)  [[elisp:(org-cycle)][| ]]
-#+end_org """
-def commonParamsSpecify(
-    csParams,
-):
-####+END:
-    csParams.parDictAdd(
-        parName='qmailAcct',
-        parDescription="Qmail O/R Account",
-        parDataType=None,
-        parDefault=None,
-        parChoices=["any"],
-        # parScope=icm.CmndParamScope.TargetParam,
-        argparseShortOpt=None,
-        argparseLongOpt='--qmailAcct',
-    )
-    csParams.parDictAdd(
-        parName='qmailAddr',
-        parDescription="Qmail O/R Account Address",
-        parDataType=None,
-        parDefault=None,
-        parChoices=["any"],
-        # parScope=icm.CmndParamScope.TargetParam,
-        argparseShortOpt=None,
-        argparseLongOpt='--qmailAddr',
-    )
-
-
-####+BEGIN: bx:cs:py3:section :title "CS-Lib Examples"
-""" #+begin_org
-*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  /Section/    [[elisp:(outline-show-subtree+toggle)][||]] *CS-Lib Examples*  [[elisp:(org-cycle)][| ]]
-#+end_org """
-####+END:
-
-####+BEGIN: b:py3:cs:func/typing :funcName "examples_csu" :funcType "eType" :retType "" :deco "default" :argsList ""
-""" #+begin_org
-*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  F-T-eType  [[elisp:(outline-show-subtree+toggle)][||]] /examples_csu/  deco=default  [[elisp:(org-cycle)][| ]]
-#+end_org """
-@cs.track(fnLoc=True, fnEntry=True, fnExit=True)
-def examples_csu(
-####+END:
-        qmailAcct: str,
-        qmailAddr: str,
-        sectionTitle: typing.AnyStr = "",
-) -> None:
-    """ #+begin_org
-** [[elisp:(org-cycle)][| *DocStr | ] Examples of Service Access Instance Commands.
-    #+end_org """
-
-    def cpsInit(): return collections.OrderedDict()
-    def menuItem(verbosity): cs.examples.cmndInsert(cmndName, cps, cmndArgs, verbosity=verbosity) # 'little' or 'none'
-    # def execLineEx(cmndStr): cs.examples.execInsert(execLine=cmndStr)
-
-    if sectionTitle == "default":
-        cs.examples.menuChapter('*BxQmail Account And Addrs Utilities*')
-
-    icmWrapper = "" ;  cmndName = "qmailAcctAddr_maildropUpdate"
-    cps = cpsInit() ; cps['qmailAcct'] = qmailAcct ; cps['qmailAddr'] = qmailAddr
-    cmndArgs = qmailAddr
-    cs.examples.cmndInsert(cmndName, cps, cmndArgs, verbosity='none', icmWrapper=icmWrapper)
-
-
-####+BEGIN: bx:cs:py3:section :title "CS-Commands"
-""" #+begin_org
-*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  /Section/    [[elisp:(outline-show-subtree+toggle)][||]] *CS-Commands*  [[elisp:(org-cycle)][| ]]
-#+end_org """
-####+END:
-
-####+BEGIN: b:py3:cs:cmnd/classHead :cmndName "qmailAcctAddr_maildropUpdate" :comment "" :extent "verify" :parsMand "qmailAcct qmailAddr" :argsMin 1 :argsMax 1 :pyInv ""
-""" #+begin_org
-*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  CmndSvc-   [[elisp:(outline-show-subtree+toggle)][||]] <<qmailAcctAddr_maildropUpdate>>  =verify= parsMand=qmailAcct qmailAddr argsMin=1 argsMax=1 ro=cli   [[elisp:(org-cycle)][| ]]
-#+end_org """
-class qmailAcctAddr_maildropUpdate(cs.Cmnd):
-    cmndParamsMandatory = [ 'qmailAcct', 'qmailAddr', ]
-    cmndParamsOptional = [ ]
-    cmndArgsLen = {'Min': 1, 'Max': 1,}
-
-    @cs.track(fnLoc=True, fnEntry=True, fnExit=True)
-    def cmnd(self,
-             rtInv: cs.RtInvoker,
-             cmndOutcome: b.op.Outcome,
-             qmailAcct: typing.Optional[str]=None,  # Cs Mandatory Param
-             qmailAddr: typing.Optional[str]=None,  # Cs Mandatory Param
-             argsList: typing.Optional[list[str]]=None,  # CsArgs
-    ) -> b.op.Outcome:
-
-        callParamsDict = {'qmailAcct': qmailAcct, 'qmailAddr': qmailAddr, }
-        if self.invocationValidate(rtInv, cmndOutcome, callParamsDict, argsList).isProblematic():
-            return b_io.eh.badOutcome(cmndOutcome)
-        cmndArgsSpecDict = self.cmndArgsSpec()
-        qmailAcct = csParam.mappedValue('qmailAcct', qmailAcct)
-        qmailAddr = csParam.mappedValue('qmailAddr', qmailAddr)
-####+END:
-        self.cmndDocStr(f""" #+begin_org
-** [[elisp:(org-cycle)][| *CmndDesc:* | ]] For dotQmail specified by qmailAcct and qmailAddr, update maildrop to maildropQmailAddr.
-*** Make sure that file corresponing to =maildropQmailAddr= exists.
-*** Read in qmailAcctAddr.
-*** Update maildrop line in qmailAcctAddr file.
-*** -
-        #+end_org """)
-
-        cmndArgsSpecDict = self.cmndArgsSpec()
-        maildropQmailAddr = self.cmndArgsGet("0", cmndArgsSpecDict, argsList)
-
-        qmailAcctAddr = AcctAddr(qmailAcct, qmailAddr)
-        qmailAcctPath = qmailAcctAddr.acctPath()
-
-        maildropRelPath = maildrop.maildropFileName(qmailAddr)
-        maildropPath = qmailAcctPath.joinpath(maildropRelPath)
-
-        if not maildropPath.exists():
-            print(f"Missing {maildropPath}")
-            return b_io.eh.badOutcome(cmndOutcome)
-
-        maildropLine = f"""| maildrop {maildropRelPath}"""
-
-        dotQmailContent = qmailAcctAddr.dotQmailFileContentRead()
-        dotQmailLinesObj = lines.Lines(inContent=dotQmailContent)
-        updatedDotQmailLines = dotQmailLinesObj.addIfNotThere(maildropLine)
-
-        updatedDotQmailContent = '\n'.join(updatedDotQmailLines)
-        qmailAcctAddr.dotQmailFileContentWrite(updatedDotQmailContent)
-
-        return(cmndOutcome)
-
-
-####+BEGIN: b:py3:cs:method/args :methodName "cmndArgsSpec" :methodType "anyOrNone" :retType "bool" :deco "default" :argsList "self"
-    """ #+begin_org
-**  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  Mtd-T-anyOrNone [[elisp:(outline-show-subtree+toggle)][||]] /cmndArgsSpec/ deco=default  deco=default   [[elisp:(org-cycle)][| ]]
-    #+end_org """
-    @cs.track(fnLoc=True, fnEntry=True, fnExit=True)
-    def cmndArgsSpec(self, ):
-####+END:
-        """  #+begin_org
-** [[elisp:(org-cycle)][| *cmndArgsSpec:* | ]]
-        #+end_org """
-
-        cmndArgsSpecDict = cs.arg.CmndArgsSpecDict()
-        cmndArgsSpecDict.argsDictAdd(
-            argPosition="0",
-            argName="maildropQmailAddr",
-            argChoices=[],
-            argDescription="Maildrop File Identifier"
-        )
-        return cmndArgsSpecDict
 
 
 ####+BEGIN: b:py3:cs:framework/endOfFile :basedOn "classification"
