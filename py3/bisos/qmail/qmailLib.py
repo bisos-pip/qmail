@@ -97,7 +97,10 @@ from bisos.common import csParam
 from bisos.qmail import maildrop
 
 from bisos.basics import pyRunAs
+from bisos.basics import basics
 from bisos.common import lines
+
+from bisos.qmail import qmailControl
 
 import enum
 import pathlib
@@ -189,7 +192,7 @@ class QmailInstallationSingleton(object):
             if controlBaseDir.is_dir():
                 self._controlBaseDir = controlBaseDir
 
-        self._usersBaseDir = self._controlBaseDir.joinpath("users")
+        self._usersBaseDir = self._varDir.joinpath("users")
 
     def fullProgPath(self, progName: str,):
         return str(self._binBaseDir.joinpath(progName))
@@ -229,18 +232,26 @@ class LocalDeliveryAcct(object):
     ):
         pass
 
-####+BEGIN: b:py3:cs:method/typing :methodName "prep" :deco "staticmethod"
+####+BEGIN: b:py3:cs:method/typing :methodName "ensureUsersBaseDir" :deco "staticmethod"
     """ #+begin_org
-**  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  Mtd-T-     [[elisp:(outline-show-subtree+toggle)][||]] /prep/  deco=staticmethod  [[elisp:(org-cycle)][| ]]
+**  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  Mtd-T-     [[elisp:(outline-show-subtree+toggle)][||]] /ensureUsersBaseDir/  deco=staticmethod  [[elisp:(org-cycle)][| ]]
     #+end_org """
     @staticmethod
-    def prep(
+    def ensureUsersBaseDir(
 ####+END:
+            inOutcome: b.op.Outcome | None =None,
     )-> b.op.Outcome:
-        outcome = b.op.Outcome()
+
+        if inOutcome is None:
+            outcome = b.op.Outcome()
+        else:
+            outcome = inOutcome
+
+        result: typing.Any = None
 
         if installation.usersBaseDir.is_dir():
-            return outcome
+            result = f"""usersBaseDir={str(installation.usersBaseDir)} exists, creation skipped"""
+            return outcome.set(opResults=result)
 
         pyRunAs.as_root_osSystem(
             f"""mkdir {str(installation.usersBaseDir)}"""
@@ -248,8 +259,17 @@ class LocalDeliveryAcct(object):
         pyRunAs.as_root_osSystem(
             f"""chmod 755 {str(installation.usersBaseDir)}"""
         )
-        
-        return outcome
+
+        includePath = installation.usersBaseDir.joinpath("include")
+        if not includePath.is_file():
+            basics.File.writeWithStr(includePath, "", perhapsAsRoot=True)
+
+        assignPath = installation.usersBaseDir.joinpath("assign")
+        if not assignPath.is_file():
+            basics.File.writeWithStr(assignPath, "", perhapsAsRoot=True)
+
+        result = f"""Created usersBaseDir={str(installation.usersBaseDir)}"""
+        return outcome.set(opResults=result)
 
 
 ####+BEGIN: b:py3:cs:method/typing :methodName "newUserProc" :deco "staticmethod"
@@ -259,22 +279,30 @@ class LocalDeliveryAcct(object):
     @staticmethod
     def newUserProc(
 ####+END:
+            inOutcome: b.op.Outcome | None =None,
     )-> b.op.Outcome:
-        outcome = b.op.Outcome()
+
+        results: str = ""
+
+        if inOutcome is None:
+            outcome = b.op.Outcome()
+            if outcome.results:
+                results = outcome.results
+        else:
+            outcome = inOutcome
+
+        qmailPw2uProgram = installation.binBaseDir.joinpath("qmail-pw2u")
+        qmailNewuProgram = installation.binBaseDir.joinpath("qmail-newu")
 
         if b.subProc.Op(outcome=outcome, uid="root", log=1).bash(
-                """\
- print "Running ${qmailPw2uProgram}"
- eval cat /etc/passwd \| ${qmailPw2uProgram}  \> ${qmailUsersBaseDir}/assign
-
-${qmailNewuProgram}
-
-    # NOTYET, is this really needed
-    # print "pkill -HUP 'qmail-send'"
-    # opDo pkill -HUP 'qmail-send'
+                f"""\
+cat /etc/passwd | {qmailPw2uProgram}  > {installation.usersBaseDir}/assign
+{qmailNewuProgram}
 """,
         ).isProblematic():  return(b_io.eh.badOutcome(outcome))
-        return outcome
+
+        results = results + "LocalDeliveryAcct.newUserProc: processed users\n"
+        return outcome.set(opResults=results)
 
 ####+BEGIN: b:py3:cs:method/typing :methodName "add" :deco "staticmethod"
     """ #+begin_org
@@ -284,8 +312,17 @@ ${qmailNewuProgram}
     def add(
 ####+END:
             user: str,
+            inOutcome: b.op.Outcome | None =None,
     )-> b.op.Outcome:
-        outcome = b.op.Outcome()
+
+        results: str = ""
+
+        if inOutcome is None:
+            outcome = b.op.Outcome()
+            if outcome.results:
+                results = outcome.results
+        else:
+            outcome = inOutcome
 
         try:
             pwd.getpwnam(user)
@@ -294,24 +331,19 @@ ${qmailNewuProgram}
             outcome.errInfo = "Missing Passwd Account"
             return outcome
 
-        print("HEREHERE")
+        LocalDeliveryAcct.ensureUsersBaseDir()
 
-        return outcome
+        includePath = installation.usersBaseDir.joinpath("include")
+        if basics.FileLine.isIn(includePath, user):
+            results = f"""basics.FileLine.isIn: {user} already in {includePath}, Addition skipped"""
+            return outcome.set(opResults=results)
 
+        basics.FileLine.appendIfNotThere(includePath, user, perhapsAsRoot=True)
 
-        if b.subProc.Op(outcome=outcome, uid="root", log=1).bash(
-                f"""\
-   if USER_isInPasswdFile ${1} ; then
-    FN_lineAddToFile "^${1}\$" "${1}" ${qmailUsersBaseDir}/include
-    ANV_raw "$0: $1 was added to ${qmailUsersBaseDir}/include"
+        LocalDeliveryAcct.newUserProc(outcome)
 
-    opDoRet mmaQmailLocDeliveryAcctsProcess || return $?
-  else
-    print "$0: Skipping ${1} because it is not in the passwd file"
-  fi
-""",
-        ).isProblematic():  return(b_io.eh.badOutcome(outcome))
-        return outcome
+        results = outcome.results + f"""LocalDeliveryAcct.add: Added {user} to {includePath}"""
+        return outcome.set(opResults=results)
 
 ####+BEGIN: b:py3:cs:method/typing :methodName "delete" :deco "staticmethod"
     """ #+begin_org
@@ -321,24 +353,38 @@ ${qmailNewuProgram}
     def delete(
 ####+END:
             user: str,
+            inOutcome: b.op.Outcome | None =None,
     )-> b.op.Outcome:
-        outcome = b.op.Outcome()
 
-        if b.subProc.Op(outcome=outcome, uid="root", log=1).bash(
-                f"""\
-  if USER_isInPasswdFile ${1} ; then
-    FN_lineRemoveFromFile "^${1}\$" ${qmailUsersBaseDir}/include
-    #print "$0: $1 was deleted from ${qmailUsersBaseDir}/include"
+        results: str = ""
 
-    opDoRet mmaQmailLocDeliveryAcctsProcess
-  else
-    print "$0: Skipping ${1} because it is not in the passwd file"
-  fi
-  return 0
+        if inOutcome is None:
+            outcome = b.op.Outcome()
+            if outcome.results:
+                results = outcome.results
+        else:
+            outcome = inOutcome
 
-""",
-        ).isProblematic():  return(b_io.eh.badOutcome(outcome))
-        return outcome
+        try:
+            pwd.getpwnam(user)
+        except KeyError:
+            outcome.error = 1
+            outcome.errInfo = "Missing Passwd Account"
+            return outcome
+
+        LocalDeliveryAcct.ensureUsersBaseDir()
+
+        includePath = installation.usersBaseDir.joinpath("include")
+        if not basics.FileLine.isIn(includePath, user):
+            results = f"""basics.FileLine.isIn: {user} not in {includePath}, deletion skipped"""
+            return outcome.set(opResults=results)
+
+        basics.FileLine.remove(includePath, user, perhapsAsRoot=True)
+
+        LocalDeliveryAcct.newUserProc(outcome)
+
+        results = outcome.results + f"""LocalDeliveryAcct.add: removed {user} from {includePath}"""
+        return outcome.set(opResults=results)
 
 ####+BEGIN: b:py3:cs:method/typing :methodName "verify" :deco "staticmethod"
     """ #+begin_org
@@ -348,39 +394,55 @@ ${qmailNewuProgram}
     def verify(
 ####+END:
             user: str,
+            inOutcome: b.op.Outcome | None =None,
     )-> b.op.Outcome:
-        outcome = b.op.Outcome()
 
-        if b.subProc.Op(outcome=outcome, uid="root", log=1).bash(
-                f"""\
-  typeset acctName=`egrep ":$1:" ${qmailUsersBaseDir}/assign`
+        results: str = ""
 
-  if [[ "${acctName}_" == "_" ]] ; then
-    EH_problem "$1 not found in ${qmailVirDomFile}"
-    return 1
-  fi
+        if inOutcome is None:
+            outcome = b.op.Outcome()
+            if outcome.results:
+                results = outcome.results
+        else:
+            outcome = inOutcome
 
-""",
-        ).isProblematic():  return(b_io.eh.badOutcome(outcome))
-        return outcome
+        try:
+            pwd.getpwnam(user)
+        except KeyError:
+            outcome.error = 1
+            outcome.errInfo = "Missing Passwd Account"
+            return outcome
 
-####+BEGIN: b:py3:cs:method/typing :methodName "domainGet" :deco "staticmethod"
+        assignPath = installation.usersBaseDir.joinpath("assign")
+        if basics.FileLine.isIn(assignPath, f":{user}:"):
+            results = f"""LocalDeliveryAcct.verify: {user} is in {assignPath}"""
+            return outcome.set(opResults=results)
+        else:
+            outcome.error = 2
+            outcome.errInfo = "Not in assign file"
+            return outcome
+
+####+BEGIN: b:py3:cs:method/typing :methodName "mainDomainGet" :deco "staticmethod"
     """ #+begin_org
-**  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  Mtd-T-     [[elisp:(outline-show-subtree+toggle)][||]] /domainGet/  deco=staticmethod  [[elisp:(org-cycle)][| ]]
+**  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  Mtd-T-     [[elisp:(outline-show-subtree+toggle)][||]] /mainDomainGet/  deco=staticmethod  [[elisp:(org-cycle)][| ]]
     #+end_org """
     @staticmethod
-    def domainGet(
+    def mainDomainGet(
 ####+END:
+            inOutcome: b.op.Outcome | None =None,
     )-> b.op.Outcome:
-        outcome = b.op.Outcome()
 
-        if b.subProc.Op(outcome=outcome, uid="root", log=1).bash(
-                f"""\
-  head -1 ${qmailControlBaseDir}/locals
-""",
-        ).isProblematic():  return(b_io.eh.badOutcome(outcome))
-        return outcome
+        results: str = ""
 
+        if inOutcome is None:
+            outcome = b.op.Outcome()
+            if outcome.results:
+                results = outcome.results
+        else:
+            outcome = inOutcome
+
+        results = qmailControl.QCFV_QmailSend().locals
+        return outcome.set(opResults=results)
 
 
 ####+BEGIN: b:py3:class/decl :className "AcctAddr" :superClass "object" :comment "Abstraction of a dotQmail" :classType "basic"

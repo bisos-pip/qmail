@@ -363,6 +363,15 @@ class QCFV_QmailSend(QmailControlFV):
     def bouncefrom(self, value):
         return self.fvSet("bouncefrom", value)
 
+    @property
+    def locals(self):
+        return self.fvGet("locals")
+
+    @locals.setter
+    def locals(self, value):
+        return self.fvSet("locals", value)
+
+
 ####+BEGIN: b:py3:cs:method/typing :methodName "fvsDefaultDict" :deco "default"
     """ #+begin_org
 **  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  Mtd-T-     [[elisp:(outline-show-subtree+toggle)][||]] /fvsDefaultDict/  deco=default  [[elisp:(org-cycle)][| ]]

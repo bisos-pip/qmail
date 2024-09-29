@@ -103,6 +103,7 @@ from bisos.common import csParam
 
 from bisos.qmail import maildrop
 from bisos.qmail import qmailLib
+from bisos.qmail import qmailControl
 
 from bisos.common import lines
 
@@ -170,6 +171,9 @@ def examples_csu(
     cmnd = cs.examples.cmndEnter
     literal = cs.examples.execInsert
 
+    includePath = qmailLib.installation.usersBaseDir.joinpath("include")
+    assignPath = qmailLib.installation.usersBaseDir.joinpath("assign")
+
     acctAddr = od([('qmailAcct', qmailAcct), ('qmailAddr', qmailAddr),])
     #cmnd('cmdbSummary', pars=perfNamePars, comment=" # remote obtain facter data, use it to summarize for cmdb")
 
@@ -179,12 +183,15 @@ def examples_csu(
 
     cs.examples.menuChapter('*LocalDeliveryAcct*')
 
-    cmnd('localDeliveryAcct', args="prep", comment=f" # ")
-    cmnd('localDeliveryAcct', args="newUserProc", comment=f" # ")
-    cmnd('localDeliveryAcct', args="add", comment=f" # ")
-    cmnd('localDeliveryAcct', args="delete", comment=f" # ")
-    cmnd('localDeliveryAcct', args="verify", comment=f" # ")
-    cmnd('localDeliveryAcct', args="domainGet", comment=f" # ")
+    cmnd('localDeliveryAcct', args="ensureUsersBaseDir", comment=f" # create usersBaseDir={str(qmailLib.installation.usersBaseDir)} if needed")
+    cmnd('localDeliveryAcct', args="newUserProc", comment=f" # Runs qmail-pw2u and  qmail-newu")
+    cmnd('localDeliveryAcct', args="add alias", comment=f" # Adds user  to {includePath} and newUserProc")
+    cmnd('localDeliveryAcct', args="add bisos", comment=f" # Adds user to {includePath} and newUserProc")
+    cmnd('localDeliveryAcct', args="delete bisos", comment=f" # Deletes user from {includePath} and newUserProc")
+    cmnd('localDeliveryAcct', args="verify bisos", comment=f" # Verifies user is in {assignPath}")
+    cmnd('localDeliveryAcct', args="mainDomainGet", comment=f" # control/locals={qmailControl.QCFV_QmailSend().locals}")
+    literal(f"ls -l {qmailLib.installation.usersBaseDir}/*")
+    literal(f"find {qmailLib.installation.usersBaseDir} -type f -print | grep -v cdb  | xargs grep ^")
 
     cs.examples.menuChapter('*VirDomEntry*')
 
@@ -327,15 +334,25 @@ class localDeliveryAcct(cs.Cmnd):
 *** -
         #+end_org """)
 
-        cmndArgs = self.cmndArgsGet("0&9999", cmndArgsSpecDict, argsList)
+        cmndArg = self.cmndArgsGet("0", cmndArgsSpecDict, argsList)
+        restArgs = self.cmndArgsGet("1&9999", cmndArgsSpecDict, argsList)
 
-        if cmndArgs[0] == 'prep':
-            cmndOutcome = qmailLib.LocalDeliveryAcct.prep()
-        if cmndArgs[0] == 'add':
-            #user = self.cmndArgsGet("1", cmndArgsSpecDict, argsList)
-            cmndOutcome = qmailLib.LocalDeliveryAcct.add(cmndArgs[1])
+        result: typing.Any = None
+
+        if cmndArg == 'ensureUsersBaseDir':
+            cmndOutcome = qmailLib.LocalDeliveryAcct.ensureUsersBaseDir()
+        elif cmndArg == 'newUserProc':
+            cmndOutcome = qmailLib.LocalDeliveryAcct.newUserProc()
+        elif cmndArg == 'add':
+            cmndOutcome = qmailLib.LocalDeliveryAcct.add(restArgs[0])
+        elif cmndArg == 'delete':
+            cmndOutcome = qmailLib.LocalDeliveryAcct.delete(restArgs[0])
+        elif cmndArg == 'verify':
+            cmndOutcome = qmailLib.LocalDeliveryAcct.verify(restArgs[0])
+        elif cmndArg == 'mainDomainGet':
+            cmndOutcome = qmailLib.LocalDeliveryAcct.mainDomainGet()
         else:
-            b_io.eh.critical_usageError("")
+            b_io.eh.critical_usageError(f"Unknown cmndArg={cmndArg}")
 
         return(cmndOutcome)
 
@@ -353,10 +370,16 @@ class localDeliveryAcct(cs.Cmnd):
 
         cmndArgsSpecDict = cs.arg.CmndArgsSpecDict()
         cmndArgsSpecDict.argsDictAdd(
-            argPosition="0&9999",
-            argName="maildropQmailAddr",
+            argPosition="0",
+            argName="cmndArg",
             argChoices=[],
-            argDescription="Maildrop File Identifier"
+            argDescription="Command which may need restOfArgs"
+        )
+        cmndArgsSpecDict.argsDictAdd(
+            argPosition="1&9999",
+            argName="restOfArgs",
+            argChoices=[],
+            argDescription="Rest of args which may be specific to each command"
         )
         return cmndArgsSpecDict
 
