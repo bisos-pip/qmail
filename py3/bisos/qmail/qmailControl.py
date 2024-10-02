@@ -85,19 +85,19 @@ import collections
 
 import collections
 import pathlib
-import os
+# import os
 #import shutil
 
 #from bisos.bpo import bpoRunBases
 #from bisos.bpo import bpo
 
-from bisos.common import csParam
+# from bisos.common import csParam
 
 #from bisos.marmee import aasInMailControl
 #from bisos.marmee import aasInMailFps
 #from bisos.marmee import aasOutMailFps
 
-from bisos.qmail import maildrop
+# from bisos.qmail import maildrop
 
 import enum
 

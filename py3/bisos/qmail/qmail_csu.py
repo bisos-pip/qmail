@@ -101,8 +101,8 @@ from bisos.common import csParam
 #from bisos.marmee import aasInMailFps
 #from bisos.marmee import aasOutMailFps
 
-from bisos.qmail import maildrop
-from bisos.qmail import qmailLib
+# from bisos.qmail import maildrop
+from bisos.qmail import qmail
 from bisos.qmail import qmailControl
 
 from bisos.common import lines
@@ -125,6 +125,26 @@ def commonParamsSpecify(
 ):
 ####+END:
     csParams.parDictAdd(
+        parName='qAddrAcct',
+        parDescription="Qmail O/R Account",
+        parDataType=None,
+        parDefault=None,
+        parChoices=["any"],
+        # parScope=icm.CmndParamScope.TargetParam,
+        argparseShortOpt=None,
+        argparseLongOpt='--qAddrAcct',
+    )
+    csParams.parDictAdd(
+        parName='localPart',
+        parDescription="Qmail O/R Account Address",
+        parDataType=None,
+        parDefault=None,
+        parChoices=["any"],
+        # parScope=icm.CmndParamScope.TargetParam,
+        argparseShortOpt=None,
+        argparseLongOpt='--localPart',
+    )
+    csParams.parDictAdd(
         parName='qmailAcct',
         parDescription="Qmail O/R Account",
         parDataType=None,
@@ -143,6 +163,16 @@ def commonParamsSpecify(
         # parScope=icm.CmndParamScope.TargetParam,
         argparseShortOpt=None,
         argparseLongOpt='--qmailAddr',
+    )
+    csParams.parDictAdd(
+        parName='maildir',
+        parDescription="Directory path to Maildir",
+        parDataType=None,
+        parDefault=None,
+        parChoices=["any"],
+        # parScope=icm.CmndParamScope.TargetParam,
+        argparseShortOpt=None,
+        argparseLongOpt='--maildir',
     )
 
 
@@ -171,27 +201,43 @@ def examples_csu(
     cmnd = cs.examples.cmndEnter
     literal = cs.examples.execInsert
 
-    includePath = qmailLib.installation.usersBaseDir.joinpath("include")
-    assignPath = qmailLib.installation.usersBaseDir.joinpath("assign")
+    includePath = qmail.installation.usersBaseDir.joinpath("include")
+    assignPath = qmail.installation.usersBaseDir.joinpath("assign")
 
-    acctAddr = od([('qmailAcct', qmailAcct), ('qmailAddr', qmailAddr),])
+    dotQmailParams = od([('qAddrAcct', qmailAcct), ('localPart', qmailAddr),])
+
     #cmnd('cmdbSummary', pars=perfNamePars, comment=" # remote obtain facter data, use it to summarize for cmdb")
 
     cs.examples.menuChapter('*BxQmail Account And Addrs Utilities*')
 
-    cmnd('qmailAcctAddr_maildropUpdate', pars=acctAddr, comment=f" # Based on System config, control/me=")
+    # cmnd('qmailAcctAddr_maildropUpdate', pars=acctAddr, comment=f" # Based on System config, control/me=")
 
     cs.examples.menuChapter('*LocalDeliveryAcct*')
 
-    cmnd('localDeliveryAcct', args="ensureUsersBaseDir", comment=f" # create usersBaseDir={str(qmailLib.installation.usersBaseDir)} if needed")
+    cmnd('localDeliveryAcct', args="ensureUsersBaseDir", comment=f" # create usersBaseDir={str(qmail.installation.usersBaseDir)} if needed")
     cmnd('localDeliveryAcct', args="newUserProc", comment=f" # Runs qmail-pw2u and  qmail-newu")
     cmnd('localDeliveryAcct', args="add alias", comment=f" # Adds user  to {includePath} and newUserProc")
     cmnd('localDeliveryAcct', args="add bisos", comment=f" # Adds user to {includePath} and newUserProc")
     cmnd('localDeliveryAcct', args="delete bisos", comment=f" # Deletes user from {includePath} and newUserProc")
     cmnd('localDeliveryAcct', args="verify bisos", comment=f" # Verifies user is in {assignPath}")
     cmnd('localDeliveryAcct', args="mainDomainGet", comment=f" # control/locals={qmailControl.QCFV_QmailSend().locals}")
-    literal(f"ls -l {qmailLib.installation.usersBaseDir}/*")
-    literal(f"find {qmailLib.installation.usersBaseDir} -type f -print | grep -v cdb  | xargs grep ^")
+    literal(f"ls -l {qmail.installation.usersBaseDir}/*")
+    literal(f"find {qmail.installation.usersBaseDir} -type f -print | grep -v cdb  | xargs grep ^")
+
+    cs.examples.menuChapter('*Maildir of qAddrAcct*')
+
+    qAddrAcctMaildirParams = od([('qAddrAcct', qmailAcct), ('maildir', "./Maildir"),])
+    cmnd('maildir', args="create", pars=qAddrAcctMaildirParams, comment=f" # ")
+    cmnd('maildir', args="delete", pars=qAddrAcctMaildirParams, comment=f" # ")
+    cmnd('maildir', args="verify", pars=qAddrAcctMaildirParams, comment=f" # ")
+
+    cs.examples.menuChapter('*DotQmail*')
+
+    dotQmailMaildirParams = od([('qAddrAcct', qmailAcct), ('localPart', qmailAddr), ('maildir', "./Maildir"),])
+
+    cmnd('dotQmail', args="read", pars=dotQmailParams, comment=f" # ")
+    cmnd('dotQmail', args="write", pars=dotQmailParams, comment=f" # ")
+    cmnd('dotQmail', args="addMaildirLine", pars=dotQmailMaildirParams, comment=f" # ")
 
     cs.examples.menuChapter('*VirDomEntry*')
 
@@ -261,7 +307,7 @@ class qmailAcctAddr_maildropUpdate(cs.Cmnd):
         cmndArgsSpecDict = self.cmndArgsSpec()
         maildropQmailAddr = self.cmndArgsGet("0", cmndArgsSpecDict, argsList)
 
-        qmailAcctAddr = qmailLib.AcctAddr(qmailAcct, qmailAddr)
+        qmailAcctAddr = qmail.AcctAddr(qmailAcct, qmailAddr)
         qmailAcctPath = qmailAcctAddr.acctPath()
 
         maildropRelPath = maildrop.maildropFileName(qmailAddr)
@@ -340,17 +386,17 @@ class localDeliveryAcct(cs.Cmnd):
         result: typing.Any = None
 
         if cmndArg == 'ensureUsersBaseDir':
-            cmndOutcome = qmailLib.LocalDeliveryAcct.ensureUsersBaseDir()
+            cmndOutcome = qmail.LocalDeliveryAcct.ensureUsersBaseDir()
         elif cmndArg == 'newUserProc':
-            cmndOutcome = qmailLib.LocalDeliveryAcct.newUserProc()
+            cmndOutcome = qmail.LocalDeliveryAcct.newUserProc()
         elif cmndArg == 'add':
-            cmndOutcome = qmailLib.LocalDeliveryAcct.add(restArgs[0])
+            cmndOutcome = qmail.LocalDeliveryAcct.add(restArgs[0])
         elif cmndArg == 'delete':
-            cmndOutcome = qmailLib.LocalDeliveryAcct.delete(restArgs[0])
+            cmndOutcome = qmail.LocalDeliveryAcct.delete(restArgs[0])
         elif cmndArg == 'verify':
-            cmndOutcome = qmailLib.LocalDeliveryAcct.verify(restArgs[0])
+            cmndOutcome = qmail.LocalDeliveryAcct.verify(restArgs[0])
         elif cmndArg == 'mainDomainGet':
-            cmndOutcome = qmailLib.LocalDeliveryAcct.mainDomainGet()
+            cmndOutcome = qmail.LocalDeliveryAcct.mainDomainGet()
         else:
             b_io.eh.critical_usageError(f"Unknown cmndArg={cmndArg}")
 
@@ -382,6 +428,168 @@ class localDeliveryAcct(cs.Cmnd):
             argDescription="Rest of args which may be specific to each command"
         )
         return cmndArgsSpecDict
+
+
+    ####+BEGIN: b:py3:cs:cmnd/classHead :cmndName "maildir" :comment "" :extent "verify" :parsMand "qAddrAcct" :argsMin 1 :argsMax 9999 :pyInv ""
+""" #+begin_org
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  CmndSvc-   [[elisp:(outline-show-subtree+toggle)][||]] <<maildir>>  =verify= parsMand=qAddrAcct argsMin=1 argsMax=9999 ro=cli   [[elisp:(org-cycle)][| ]]
+#+end_org """
+class maildir(cs.Cmnd):
+    cmndParamsMandatory = [ 'qAddrAcct', ]
+    cmndParamsOptional = [ ]
+    cmndArgsLen = {'Min': 1, 'Max': 9999,}
+
+    @cs.track(fnLoc=True, fnEntry=True, fnExit=True)
+    def cmnd(self,
+             rtInv: cs.RtInvoker,
+             cmndOutcome: b.op.Outcome,
+             qAddrAcct: typing.Optional[str]=None,  # Cs Mandatory Param
+             argsList: typing.Optional[list[str]]=None,  # CsArgs
+    ) -> b.op.Outcome:
+
+        failed = b_io.eh.badOutcome
+        callParamsDict = {'qAddrAcct': qAddrAcct, }
+        if self.invocationValidate(rtInv, cmndOutcome, callParamsDict, argsList).isProblematic():
+            return failed(cmndOutcome)
+        cmndArgsSpecDict = self.cmndArgsSpec()
+        qAddrAcct = csParam.mappedValue('qAddrAcct', qAddrAcct)
+####+END:
+        self.cmndDocStr(f""" #+begin_org
+** [[elisp:(org-cycle)][| *CmndDesc:* | ]] For dotQmail specified by qmailAcct and qmailAddr, update maildrop to maildropQmailAddr.
+*** Make sure that file corresponing to =maildropQmailAddr= exists.
+*** Read in qmailAcctAddr.
+*** Update maildrop line in qmailAcctAddr file.
+*** -
+        #+end_org """)
+
+        cmndArg = self.cmndArgsGet("0", cmndArgsSpecDict, argsList)
+        restArgs = self.cmndArgsGet("1&9999", cmndArgsSpecDict, argsList)
+
+        result: typing.Any = None
+
+        if cmndArg == 'create':
+            cmndOutcome = qmail.Maildir.create(qAddrAcct, restArgs)
+        elif cmndArg == 'delete':
+            cmndOutcome = qmail.Maildir.delete(qAddrAcct, restArgs)
+        elif cmndArg == 'verify':
+            cmndOutcome = qmail.Maildir.verify(qAddrAcct, restArgs)
+        else:
+            b_io.eh.critical_usageError(f"Unknown cmndArg={cmndArg}")
+
+        return(cmndOutcome)
+
+
+####+BEGIN: b:py3:cs:method/args :methodName "cmndArgsSpec" :methodType "anyOrNone" :retType "bool" :deco "default" :argsList "self"
+    """ #+begin_org
+**  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  Mtd-T-anyOrNone [[elisp:(outline-show-subtree+toggle)][||]] /cmndArgsSpec/ deco=default  deco=default   [[elisp:(org-cycle)][| ]]
+    #+end_org """
+    @cs.track(fnLoc=True, fnEntry=True, fnExit=True)
+    def cmndArgsSpec(self, ):
+####+END:
+        """  #+begin_org
+** [[elisp:(org-cycle)][| *cmndArgsSpec:* | ]]
+        #+end_org """
+
+        cmndArgsSpecDict = cs.arg.CmndArgsSpecDict()
+        cmndArgsSpecDict.argsDictAdd(
+            argPosition="0",
+            argName="cmndArg",
+            argChoices=[],
+            argDescription="Command which may need restOfArgs"
+        )
+        cmndArgsSpecDict.argsDictAdd(
+            argPosition="1&9999",
+            argName="restOfArgs",
+            argChoices=[],
+            argDescription="Rest of args which may be specific to each command"
+        )
+        return cmndArgsSpecDict
+
+####+BEGIN: b:py3:cs:cmnd/classHead :cmndName "dotQmail" :comment "" :extent "verify" :parsMand "qAddrAcct localPart" :argsMin 1 :argsMax 4 :pyInv ""
+""" #+begin_org
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  CmndSvc-   [[elisp:(outline-show-subtree+toggle)][||]] <<dotQmail>>  =verify= parsMand=qAddrAcct localPart argsMin=1 argsMax=4 ro=cli   [[elisp:(org-cycle)][| ]]
+#+end_org """
+class dotQmail(cs.Cmnd):
+    cmndParamsMandatory = [ 'qAddrAcct', 'localPart', ]
+    cmndParamsOptional = [ ]
+    cmndArgsLen = {'Min': 1, 'Max': 4,}
+
+    @cs.track(fnLoc=True, fnEntry=True, fnExit=True)
+    def cmnd(self,
+             rtInv: cs.RtInvoker,
+             cmndOutcome: b.op.Outcome,
+             qAddrAcct: typing.Optional[str]=None,  # Cs Mandatory Param
+             localPart: typing.Optional[str]=None,  # Cs Mandatory Param
+             argsList: typing.Optional[list[str]]=None,  # CsArgs
+    ) -> b.op.Outcome:
+
+        failed = b_io.eh.badOutcome
+        callParamsDict = {'qAddrAcct': qAddrAcct, 'localPart': localPart, }
+        if self.invocationValidate(rtInv, cmndOutcome, callParamsDict, argsList).isProblematic():
+            return failed(cmndOutcome)
+        cmndArgsSpecDict = self.cmndArgsSpec()
+        qAddrAcct = csParam.mappedValue('qAddrAcct', qAddrAcct)
+        localPart = csParam.mappedValue('localPart', localPart)
+####+END:
+        self.cmndDocStr(f""" #+begin_org
+** [[elisp:(org-cycle)][| *CmndDesc:* | ]] For dotQmail specified by qmailAcct and qmailAddr, update maildrop to maildropQmailAddr.
+*** Make sure that file corresponing to =maildropQmailAddr= exists.
+*** Read in qmailAcctAddr.
+*** Update maildrop line in qmailAcctAddr file.
+*** -
+        #+end_org """)
+
+        cmndArg = self.cmndArgsGet("0", cmndArgsSpecDict, argsList)
+        restArgs = self.cmndArgsGet("1&9999", cmndArgsSpecDict, argsList)
+
+        result: typing.Any = None
+
+        dotQmail = qmail.DotQmail(qAddrAcct, localPart)
+
+        if cmndArg == 'ensureUsersBaseDir':
+            cmndOutcome = qmail.LocalDeliveryAcct.ensureUsersBaseDir()
+        elif cmndArg == 'newUserProc':
+            cmndOutcome = qmail.LocalDeliveryAcct.newUserProc()
+        elif cmndArg == 'add':
+            cmndOutcome = qmail.LocalDeliveryAcct.add(restArgs[0])
+        elif cmndArg == 'delete':
+            cmndOutcome = qmail.LocalDeliveryAcct.delete(restArgs[0])
+        elif cmndArg == 'verify':
+            cmndOutcome = qmail.LocalDeliveryAcct.verify(restArgs[0])
+        elif cmndArg == 'mainDomainGet':
+            cmndOutcome = qmail.LocalDeliveryAcct.mainDomainGet()
+        else:
+            b_io.eh.critical_usageError(f"Unknown cmndArg={cmndArg}")
+
+        return(cmndOutcome)
+
+
+####+BEGIN: b:py3:cs:method/args :methodName "cmndArgsSpec" :methodType "anyOrNone" :retType "bool" :deco "default" :argsList "self"
+    """ #+begin_org
+**  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  Mtd-T-anyOrNone [[elisp:(outline-show-subtree+toggle)][||]] /cmndArgsSpec/ deco=default  deco=default   [[elisp:(org-cycle)][| ]]
+    #+end_org """
+    @cs.track(fnLoc=True, fnEntry=True, fnExit=True)
+    def cmndArgsSpec(self, ):
+####+END:
+        """  #+begin_org
+** [[elisp:(org-cycle)][| *cmndArgsSpec:* | ]]
+        #+end_org """
+
+        cmndArgsSpecDict = cs.arg.CmndArgsSpecDict()
+        cmndArgsSpecDict.argsDictAdd(
+            argPosition="0",
+            argName="cmndArg",
+            argChoices=[],
+            argDescription="Command which may need restOfArgs"
+        )
+        cmndArgsSpecDict.argsDictAdd(
+            argPosition="1&9999",
+            argName="restOfArgs",
+            argChoices=[],
+            argDescription="Rest of args which may be specific to each command"
+        )
+        return cmndArgsSpecDict
+
 
 
 ####+BEGIN: b:py3:cs:framework/endOfFile :basedOn "classification"

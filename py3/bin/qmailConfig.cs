@@ -99,11 +99,11 @@ import collections
    "bisos.b.cs.ro"    ;; Must be included even when unused
    "blee.icmPlayer.bleep"
    "bisos.b.clsMethod_csu"
-   "bisos.qmail.qmailLib_csu"
+   "bisos.qmail.qmail_csu"
  ))
 #+END_SRC
 #+RESULTS:
-| bisos.b.cs.ro | blee.icmPlayer.bleep | bisos.b.clsMethod_csu | bisos.qmail.qmailLib_csu |
+| bisos.b.cs.ro | blee.icmPlayer.bleep | bisos.b.clsMethod_csu | bisos.qmail.qmail_csu |
 #+end_org """
 
 ####+BEGIN: b:py3:cs:framework/csuListProc :pyImports t :csuImports t :csuParams t
@@ -114,10 +114,10 @@ import collections
 from bisos.b.cs import ro
 from blee.icmPlayer import bleep
 from bisos.b import clsMethod_csu
-from bisos.qmail import qmailLib_csu
+from bisos.qmail import qmail_csu
 
 
-csuList = [ 'bisos.b.cs.ro', 'blee.icmPlayer.bleep', 'bisos.b.clsMethod_csu', 'bisos.qmail.qmailLib_csu', ]
+csuList = [ 'bisos.b.cs.ro', 'blee.icmPlayer.bleep', 'bisos.b.clsMethod_csu', 'bisos.qmail.qmail_csu', ]
 
 g_importedCmndsModules = cs.csuList_importedModules(csuList)
 
@@ -176,7 +176,7 @@ class examples(cs.Cmnd):
         # cs.examples.menuChapter('*Currents Examples Settings*')
         # cur_examples()
 
-        qmailLib_csu.examples_csu(sectionTitle="default")
+        qmail_csu.examples_csu(sectionTitle="default")
 
         return(cmndOutcome)
 

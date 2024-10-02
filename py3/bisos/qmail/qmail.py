@@ -94,11 +94,11 @@ import os
 
 from bisos.common import csParam
 
-from bisos.qmail import maildrop
+# from bisos.qmail import maildrop
 
 from bisos.basics import pyRunAs
 from bisos.basics import basics
-from bisos.common import lines
+# from bisos.common import lines
 
 from bisos.qmail import qmailControl
 
@@ -445,11 +445,177 @@ cat /etc/passwd | {qmailPw2uProgram}  > {installation.usersBaseDir}/assign
         return outcome.set(opResults=results)
 
 
-####+BEGIN: b:py3:class/decl :className "AcctAddr" :superClass "object" :comment "Abstraction of a dotQmail" :classType "basic"
+####+BEGIN: b:py3:class/decl :className "LocalDeliveryAction" :superClass "object" :comment "Invoke qmail-local with static methods" :classType "basic"
 """ #+begin_org
-*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  Cls-basic  [[elisp:(outline-show-subtree+toggle)][||]] /AcctAddr/  superClass=object =Abstraction of a dotQmail=  [[elisp:(org-cycle)][| ]]
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  Cls-basic  [[elisp:(outline-show-subtree+toggle)][||]] /LocalDeliveryAction/  superClass=object =Invoke qmail-local with static methods=  [[elisp:(org-cycle)][| ]]
 #+end_org """
-class AcctAddr(object):
+class LocalDeliveryAction(object):
+####+END:
+    """
+** Abstraction of a Local Delivery Acct
+"""
+
+    def __init__(
+            self,
+    ):
+        pass
+
+####+BEGIN: b:py3:cs:method/typing :methodName "testShow" :deco "staticmethod"
+    """ #+begin_org
+**  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  Mtd-T-     [[elisp:(outline-show-subtree+toggle)][||]] /testShow/  deco=staticmethod  [[elisp:(org-cycle)][| ]]
+    #+end_org """
+    @staticmethod
+    def testShow(
+####+END:
+            inOutcome: b.op.Outcome | None =None,
+    )-> b.op.Outcome:
+        """
+  mmaQmail_dotQmailFile=${opAcct_homeDir}/.qmail
+  typeset dotQmailFile=${mmaQmail_dotQmailFile}
+
+  EH_assert [[ -f ${dotQmailFile}-${localPart} ]]
+
+  opDo eval "qmail-local -n ${opAcct_name} ${opAcct_homeDir} ${opAcct_name} '-' '${localPart}' '' '' ${dotQmailFile}"
+        """
+
+        if inOutcome is None:
+            outcome = b.op.Outcome()
+        else:
+            outcome = inOutcome
+
+        result: typing.Any = None
+        return outcome.set(opResults=result)
+
+
+####+BEGIN: b:py3:class/decl :className "Maildir" :superClass "object" :comment "Abstraction of Maildir CRUD" :classType "basic"
+""" #+begin_org
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  Cls-basic  [[elisp:(outline-show-subtree+toggle)][||]] /Maildir/  superClass=object =Abstraction of Maildir CRUD=  [[elisp:(org-cycle)][| ]]
+#+end_org """
+class Maildir(object):
+####+END:
+    """
+** Abstraction of Maildir CRUD
+"""
+
+    def __init__(
+            self,
+    ):
+        pass
+
+####+BEGIN: b:py3:cs:method/typing :methodName "create" :deco "staticmethod"
+    """ #+begin_org
+**  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  Mtd-T-     [[elisp:(outline-show-subtree+toggle)][||]] /create/  deco=staticmethod  [[elisp:(org-cycle)][| ]]
+    #+end_org """
+    @staticmethod
+    def create(
+####+END:
+            qAddrAcct: str,
+            maildirsList: list[str],
+            inOutcome: b.op.Outcome | None =None,
+    )-> b.op.Outcome:
+        """
+        maildirFullPath = pathlib.Path(os.path.join(dataBase, 'maildir'))
+
+        if not maildirFullPath.is_dir():
+            maildirFullPath.mkdir(parents=True, exist_ok=True)
+
+        for eachMaildir in maildirNames:
+            hereMaildirMainBase = maildirFullPath.joinpath(eachMaildir)
+
+            if not hereMaildirMainBase.joinpath('new').is_dir():
+                if not (resStr := b.subProc.WOpW(invedBy=self, log=1).bash(
+                    f'maildirmake {hereMaildirMainBase}',
+                ).stdout):
+                    b_io.eh.badOutcome(cmndOutcome)
+                    #return(b_io.eh.badOutcome(cmndOutcome))
+        """
+
+        if inOutcome is None: outcome = b.op.Outcome()
+        else: outcome = inOutcome
+
+        result: typing.Any = None
+
+        for eachMaildir in maildirsList:
+            hereMaildirMainBase = pathlib.Path(eachMaildir)
+
+            if not hereMaildirMainBase.joinpath('new').is_dir():
+                if not (resStr := b.subProc.WOpW(invedBy=None, log=1).bash(
+                    f'maildirmake {hereMaildirMainBase}',
+                ).stdout):
+                    b_io.eh.badOutcome(outcome)
+
+        return outcome.set(opResults=result)
+
+####+BEGIN: b:py3:cs:method/typing :methodName "verify" :deco "staticmethod"
+    """ #+begin_org
+**  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  Mtd-T-     [[elisp:(outline-show-subtree+toggle)][||]] /verify/  deco=staticmethod  [[elisp:(org-cycle)][| ]]
+    #+end_org """
+    @staticmethod
+    def verify(
+####+END:
+            qAddrAcct: str,
+            maildirsList: list[str],
+            inOutcome: b.op.Outcome | None =None,
+    )-> b.op.Outcome:
+        """
+        """
+
+        return "NOTYET"
+
+        if inOutcome is None: outcome = b.op.Outcome()
+        else: outcome = inOutcome
+
+        result: typing.Any = None
+
+        for eachMaildir in maildirsList:
+            hereMaildirMainBase = pathlib.Path(eachMaildir)
+
+            if not hereMaildirMainBase.joinpath('new').is_dir():
+                if not (resStr := b.subProc.WOpW(invedBy=None, log=1).bash(
+                    f'maildirmake {hereMaildirMainBase}',
+                ).stdout):
+                    b_io.eh.badOutcome(outcome)
+
+        return outcome.set(opResults=result)
+
+####+BEGIN: b:py3:cs:method/typing :methodName "delete" :deco "staticmethod"
+    """ #+begin_org
+**  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  Mtd-T-     [[elisp:(outline-show-subtree+toggle)][||]] /delete/  deco=staticmethod  [[elisp:(org-cycle)][| ]]
+    #+end_org """
+    @staticmethod
+    def delete(
+####+END:
+            qAddrAcct: str,
+            maildirsList: list[str],
+            inOutcome: b.op.Outcome | None =None,
+    )-> b.op.Outcome:
+        """
+        """
+
+        return "NOTYET"
+        
+        if inOutcome is None: outcome = b.op.Outcome()
+        else: outcome = inOutcome
+
+        result: typing.Any = None
+
+        for eachMaildir in maildirsList:
+            hereMaildirMainBase = pathlib.Path(eachMaildir)
+
+            if not hereMaildirMainBase.joinpath('new').is_dir():
+                if not (resStr := b.subProc.WOpW(invedBy=None, log=1).bash(
+                    f'maildirmake {hereMaildirMainBase}',
+                ).stdout):
+                    b_io.eh.badOutcome(outcome)
+
+        return outcome.set(opResults=result)
+
+
+####+BEGIN: b:py3:class/decl :className "DotQmailFile" :superClass "object" :comment "Abstraction of a dotQmail" :classType "basic"
+""" #+begin_org
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  Cls-basic  [[elisp:(outline-show-subtree+toggle)][||]] /DotQmailFile/  superClass=object =Abstraction of a dotQmail=  [[elisp:(org-cycle)][| ]]
+#+end_org """
+class DotQmailFile(object):
 ####+END:
     """
 ** Abstraction of a dotQmail
@@ -457,12 +623,12 @@ class AcctAddr(object):
 
     def __init__(
             self,
-            qmailAcct,
-            qmailAddr,
+            qAddrAcct,
+            localPart,
     ):
 
-        self.qmailAcct = qmailAcct
-        self.qmailAddr = qmailAddr
+        self.qAddrAcct = qAddrAcct
+        self.localPart = localPart
 
 ####+BEGIN: b:py3:cs:method/typing :methodName "acctPath" :deco "default"
     """ #+begin_org
@@ -473,25 +639,28 @@ class AcctAddr(object):
 ####+END:
             self,
     ) -> pathlib.Path:
-        return pathlib.Path(os.path.expanduser(f'~{self.qmailAcct}'))
+        return pathlib.Path(os.path.expanduser(f'~{self.qAddrAcct}'))
 
-####+BEGIN: b:py3:cs:method/typing :methodName "dotQmailFileNameOfAddr" :deco "default"
+####+BEGIN: b:py3:cs:method/typing :methodName "nameOfLocalPart" :deco "default"
     """ #+begin_org
-**  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  Mtd-T-     [[elisp:(outline-show-subtree+toggle)][||]] /dotQmailFileNameOfAddr/ deco=default  deco=default  [[elisp:(org-cycle)][| ]]
+**  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  Mtd-T-     [[elisp:(outline-show-subtree+toggle)][||]] /nameOfLocalPart/  deco=default  [[elisp:(org-cycle)][| ]]
     #+end_org """
     @cs.track(fnLoc=True, fnEntry=True, fnExit=True)
-    def dotQmailFileNameOfAddr(
+    def nameOfLocalPart(
 ####+END:
             self,
     ) -> pathlib.Path:
-        return pathlib.Path(f".qmail-{self.qmailAddr}")
+        if self.localPart =="":
+            return pathlib.Path(f".qmail")
+        else:
+            return pathlib.Path(f".qmail-{self.localPart}")
 
-####+BEGIN: b:py3:cs:method/typing :methodName "dotQmailFilePath" :deco "default"
+####+BEGIN: b:py3:cs:method/typing :methodName "path" :deco "default"
     """ #+begin_org
-**  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  Mtd-T-     [[elisp:(outline-show-subtree+toggle)][||]] /dotQmailFilePath/ deco=default  deco=default  [[elisp:(org-cycle)][| ]]
+**  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  Mtd-T-     [[elisp:(outline-show-subtree+toggle)][||]] /path/  deco=default  [[elisp:(org-cycle)][| ]]
     #+end_org """
     @cs.track(fnLoc=True, fnEntry=True, fnExit=True)
-    def dotQmailFilePath(
+    def path(
 ####+END:
             self,
     ) -> pathlib.Path:
@@ -501,12 +670,12 @@ class AcctAddr(object):
             )
         )
 
-####+BEGIN: b:py3:cs:method/typing :methodName "dotQmailFileContentRead" :deco "default"
+####+BEGIN: b:py3:cs:method/typing :methodName "contentRead" :deco "default"
     """ #+begin_org
-**  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  Mtd-T-     [[elisp:(outline-show-subtree+toggle)][||]] /dotQmailFileContentRead/ deco=default  deco=default  [[elisp:(org-cycle)][| ]]
+**  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  Mtd-T-     [[elisp:(outline-show-subtree+toggle)][||]] /contentRead/  deco=default  [[elisp:(org-cycle)][| ]]
     #+end_org """
     @cs.track(fnLoc=True, fnEntry=True, fnExit=True)
-    def dotQmailFileContentRead(
+    def contentRead(
 ####+END:
             self,
     ) -> str:
@@ -516,12 +685,12 @@ class AcctAddr(object):
             )
         )
 
-####+BEGIN: b:py3:cs:method/typing :methodName "dotQmailFileContentWrite" :deco "default"
+####+BEGIN: b:py3:cs:method/typing :methodName "contentWrite" :deco "default"
     """ #+begin_org
-**  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  Mtd-T-     [[elisp:(outline-show-subtree+toggle)][||]] /dotQmailFileContentWrite/ deco=default  deco=default  [[elisp:(org-cycle)][| ]]
+**  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  Mtd-T-     [[elisp:(outline-show-subtree+toggle)][||]] /contentWrite/  deco=default  [[elisp:(org-cycle)][| ]]
     #+end_org """
     @cs.track(fnLoc=True, fnEntry=True, fnExit=True)
-    def dotQmailFileContentWrite(
+    def contentWrite(
 ####+END:
             self,
             content: str,
@@ -531,17 +700,91 @@ class AcctAddr(object):
             content,
         )
         pyRunAs.as_root_osSystem(
-            f"""chown {self.qmailAcct} {self.dotQmailFilePath()}"""
+            f"""chown {self.qAddrAcct} {self.dotQmailFilePath()}"""
         )
         pyRunAs.as_root_osSystem(
             f"""chmod 600 {self.dotQmailFilePath()}"""
         )
         os.system(f"ls -l {self.dotQmailFilePath()}")
 
+####+BEGIN: b:py3:cs:method/typing :methodName "addMaildirLine" :deco "default"
+    """ #+begin_org
+**  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  Mtd-T-     [[elisp:(outline-show-subtree+toggle)][||]] /addMaildirLine/  deco=default  [[elisp:(org-cycle)][| ]]
+    #+end_org """
+    @cs.track(fnLoc=True, fnEntry=True, fnExit=True)
+    def addMaildirLine(
+####+END:
+            self,
+            maildirPath: str,
+    ) -> None:
+        return
 
-####+BEGIN: b:py3:class/decl :className "VirDomEntry" :superClass "object" :comment "Abstraction of a qmail delivery account a set of statics" :classType "basic"
+####+BEGIN: b:py3:cs:method/typing :methodName "delete" :deco "default"
+    """ #+begin_org
+**  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  Mtd-T-     [[elisp:(outline-show-subtree+toggle)][||]] /delete/  deco=default  [[elisp:(org-cycle)][| ]]
+    #+end_org """
+    @cs.track(fnLoc=True, fnEntry=True, fnExit=True)
+    def delete(
+####+END:
+            self,
+    ) -> None:
+        pass
+
+####+BEGIN: b:py3:cs:method/typing :methodName "deliveryStatus" :deco "default"
+    """ #+begin_org
+**  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  Mtd-T-     [[elisp:(outline-show-subtree+toggle)][||]] /deliveryStatus/  deco=default  [[elisp:(org-cycle)][| ]]
+    #+end_org """
+    @cs.track(fnLoc=True, fnEntry=True, fnExit=True)
+    def deliveryStatus(
+####+END:
+            self,
+    ) -> None:
+        """
+  findResult=$( find ${opAcct_homeDir} -maxdepth 0 -perm -01000 )
+  if [[ ${findResult} == ${opAcct_homeDir} ]] ; then
+    ANT_raw "Sticky Bit Set, Delivery is On Hold"
+    opDo ls -ld ${opAcct_homeDir}
+  else
+    ANT_raw "Sticky Bit NOT Set, Normal Delivery"
+    opDo ls -ld ${opAcct_homeDir}
+  fi
+         """
+        pass
+
+####+BEGIN: b:py3:cs:method/typing :methodName "deliveryPause" :deco "default"
+    """ #+begin_org
+**  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  Mtd-T-     [[elisp:(outline-show-subtree+toggle)][||]] /deliveryPause/  deco=default  [[elisp:(org-cycle)][| ]]
+    #+end_org """
+    @cs.track(fnLoc=True, fnEntry=True, fnExit=True)
+    def deliveryPause(
+####+END:
+            self,
+    ) -> None:
+        """
+          opDo chmod +t ${opAcct_homeDir}
+  opDo ls -ld ${opAcct_homeDir}
+         """
+        pass
+
+####+BEGIN: b:py3:cs:method/typing :methodName "deliveryResume" :deco "default"
+    """ #+begin_org
+**  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  Mtd-T-     [[elisp:(outline-show-subtree+toggle)][||]] /deliveryResume/  deco=default  [[elisp:(org-cycle)][| ]]
+    #+end_org """
+    @cs.track(fnLoc=True, fnEntry=True, fnExit=True)
+    def deliveryResume(
+####+END:
+            self,
+    ) -> None:
+        """
+          opDo chmod -t ${opAcct_homeDir}
+  opDo ls -ld ${opAcct_homeDir}
+         """
+        pass
+
+
+####+BEGIN: b:py3:class/decl :className "VirDomEntry" :superClass "object" :comment "Abstraction of a VidrDom Entry" :classType "basic"
 """ #+begin_org
-*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  Cls-basic  [[elisp:(outline-show-subtree+toggle)][||]] /VirDomEntry/  superClass=object =Abstraction of a qmail delivery account a set of statics=  [[elisp:(org-cycle)][| ]]
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  Cls-basic  [[elisp:(outline-show-subtree+toggle)][||]] /VirDomEntry/  superClass=object =Abstraction of a VidrDom Entry=  [[elisp:(org-cycle)][| ]]
 #+end_org """
 class VirDomEntry(object):
 ####+END:
@@ -665,14 +908,14 @@ class VirDomEntry(object):
 
 
 
-####+BEGIN: b:py3:class/decl :className "RcpthostsEntry" :superClass "object" :comment "Abstraction of a qmail delivery account a set of statics" :classType "basic"
+####+BEGIN: b:py3:class/decl :className "RcpthostsEntry" :superClass "object" :comment "Abstraction of RcpthostsEntry" :classType "basic"
 """ #+begin_org
-*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  Cls-basic  [[elisp:(outline-show-subtree+toggle)][||]] /RcpthostsEntry/  superClass=object =Abstraction of a qmail delivery account a set of statics=  [[elisp:(org-cycle)][| ]]
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  Cls-basic  [[elisp:(outline-show-subtree+toggle)][||]] /RcpthostsEntry/  superClass=object =Abstraction of RcpthostsEntry=  [[elisp:(org-cycle)][| ]]
 #+end_org """
 class RcpthostsEntry(object):
 ####+END:
     """
-** Abstraction of a Local Delivery Acct
+** Abstraction of RcpthostsEntry
 """
 
     def __init__(
@@ -735,14 +978,14 @@ echo NOTYET
         ).isProblematic():  return(b_io.eh.badOutcome(outcome))
         return outcome
 
-####+BEGIN: b:py3:class/decl :className "VirDom" :superClass "object" :comment "Abstraction of a qmail delivery account a set of statics" :classType "basic"
+####+BEGIN: b:py3:class/decl :className "VirDom" :superClass "object" :comment "Abstraction of a Virtual Domain" :classType "basic"
 """ #+begin_org
-*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  Cls-basic  [[elisp:(outline-show-subtree+toggle)][||]] /VirDom/  superClass=object =Abstraction of a qmail delivery account a set of statics=  [[elisp:(org-cycle)][| ]]
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  Cls-basic  [[elisp:(outline-show-subtree+toggle)][||]] /VirDom/  superClass=object =Abstraction of a Virtual Domain=  [[elisp:(org-cycle)][| ]]
 #+end_org """
 class VirDom(object):
 ####+END:
     """
-** Abstraction of a Local Delivery Acct
+** Abstraction of a Virtual Domain
 """
 
     def __init__(
