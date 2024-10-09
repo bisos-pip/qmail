@@ -655,18 +655,18 @@ class DotQmailFile(object):
         else:
             return pathlib.Path(f".qmail-{self.localPart}")
 
-####+BEGIN: b:py3:cs:method/typing :methodName "path" :deco "default"
+####+BEGIN: b:py3:cs:method/typing :methodName "filePath" :deco "default"
     """ #+begin_org
-**  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  Mtd-T-     [[elisp:(outline-show-subtree+toggle)][||]] /path/  deco=default  [[elisp:(org-cycle)][| ]]
+**  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  Mtd-T-     [[elisp:(outline-show-subtree+toggle)][||]] /filePath/  deco=default  [[elisp:(org-cycle)][| ]]
     #+end_org """
     @cs.track(fnLoc=True, fnEntry=True, fnExit=True)
-    def path(
+    def filePath(
 ####+END:
             self,
     ) -> pathlib.Path:
         return (
             self.acctPath().joinpath(
-               self.dotQmailFileNameOfAddr()
+               self.nameOfLocalPart()
             )
         )
 
@@ -681,7 +681,7 @@ class DotQmailFile(object):
     ) -> str:
         return (
             pyRunAs.as_root_readFromFile(
-                self.dotQmailFilePath()
+                self.filePath()
             )
         )
 
@@ -694,18 +694,32 @@ class DotQmailFile(object):
 ####+END:
             self,
             content: str,
-    ) -> None:
+            inOutcome: b.op.Outcome | None =None,
+    )-> b.op.Outcome:
+        """
+        """
+        if inOutcome is None: outcome = b.op.Outcome()
+        else: outcome = inOutcome.adopt()
+
+        result: typing.Any = None
+
         pyRunAs.as_root_writeToFile(
-            self.dotQmailFilePath(),
+            self.filePath(),
             content,
         )
         pyRunAs.as_root_osSystem(
-            f"""chown {self.qAddrAcct} {self.dotQmailFilePath()}"""
+            f"""chown {self.qAddrAcct} {self.filePath()}"""
         )
         pyRunAs.as_root_osSystem(
-            f"""chmod 600 {self.dotQmailFilePath()}"""
+            f"""chmod 600 {self.filePath()}"""
         )
-        os.system(f"ls -l {self.dotQmailFilePath()}")
+
+        outcome.report(f"Wrote dotQmail={self.filePath()}")
+
+        os.system(f"ls -l {self.filePath()}")
+
+        outcome.set(opResults=result)
+
 
 ####+BEGIN: b:py3:cs:method/typing :methodName "addMaildirLine" :deco "default"
     """ #+begin_org
@@ -716,19 +730,105 @@ class DotQmailFile(object):
 ####+END:
             self,
             maildirPath: str,
-    ) -> None:
-        return
+            inOutcome: b.op.Outcome | None =None,
+    )-> b.op.Outcome:
+        """
+        """
+        if inOutcome is None: outcome = b.op.Outcome()
+        else: outcome = inOutcome.adopt()
 
-####+BEGIN: b:py3:cs:method/typing :methodName "delete" :deco "default"
+        result: typing.Any = None
+
+        if not self.filePath().is_file():
+            basics.File.writeWithStr(self.filePath(), "", perhapsAsRoot=True)
+        else:
+            if basics.FileLine.isIn(self.filePath(), maildirPath, perhapsAsRoot=True):
+                outcome.report(f"""basics.FileLine.isIn: {maildirPath} already in {self.filePath()}, Addition skipped""")
+                return outcome.set(opResults=result)
+
+        basics.FileLine.appendIfNotThere(self.filePath(), maildirPath, perhapsAsRoot=True)
+
+        pyRunAs.as_root_osSystem(
+            f"""chown {self.qAddrAcct} {self.filePath()}"""
+        )
+        pyRunAs.as_root_osSystem(
+            f"""chmod 600 {self.filePath()}"""
+        )
+        outcome.report(f"""Added {maildirPath} to {self.filePath()}""")
+        return outcome.set(opResults=result)
+
+####+BEGIN: b:py3:cs:method/typing :methodName "addForwardLine" :deco "default"
     """ #+begin_org
-**  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  Mtd-T-     [[elisp:(outline-show-subtree+toggle)][||]] /delete/  deco=default  [[elisp:(org-cycle)][| ]]
+**  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  Mtd-T-     [[elisp:(outline-show-subtree+toggle)][||]] /addForwardLine/  deco=default  [[elisp:(org-cycle)][| ]]
     #+end_org """
     @cs.track(fnLoc=True, fnEntry=True, fnExit=True)
-    def delete(
+    def addForwardLine(
 ####+END:
             self,
-    ) -> None:
-        pass
+            destAddr: str,
+            inOutcome: b.op.Outcome | None =None,
+    )-> b.op.Outcome:
+        """
+        """
+        if inOutcome is None: outcome = b.op.Outcome()
+        else: outcome = inOutcome.adopt()
+
+        result: typing.Any = None
+
+        if not self.filePath().is_file():
+            basics.File.writeWithStr(self.filePath(), "", perhapsAsRoot=True)
+        else:
+            if basics.FileLine.isIn(self.filePath(), destAddr, perhapsAsRoot=True):
+                outcome.report(f"""basics.FileLine.isIn: {destAddr} already in {self.filePath()}, Addition skipped""")
+                return outcome.set(opResults=result)
+
+        basics.FileLine.appendIfNotThere(self.filePath(), f"&{destAddr}", perhapsAsRoot=True)
+
+        pyRunAs.as_root_osSystem(
+            f"""chown {self.qAddrAcct} {self.filePath()}"""
+        )
+        pyRunAs.as_root_osSystem(
+            f"""chmod 600 {self.filePath()}"""
+        )
+        outcome.report(f"""Added {destAddr} to {self.filePath()}""")
+        return outcome.set(opResults=result)
+
+
+####+BEGIN: b:py3:cs:method/typing :methodName "deleteLine" :deco "default"
+    """ #+begin_org
+**  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  Mtd-T-     [[elisp:(outline-show-subtree+toggle)][||]] /deleteLine/  deco=default  [[elisp:(org-cycle)][| ]]
+    #+end_org """
+    @cs.track(fnLoc=True, fnEntry=True, fnExit=True)
+    def deleteLine(
+####+END:
+           self,
+            line: str,
+            inOutcome: b.op.Outcome | None =None,
+    )-> b.op.Outcome:
+        """
+        """
+        if inOutcome is None: outcome = b.op.Outcome()
+        else: outcome = inOutcome.adopt()
+
+        result: typing.Any = None
+
+
+        result = basics.FileLine.remove(self.filePath(), line, perhapsAsRoot=True)
+
+        pyRunAs.as_root_osSystem(
+            f"""chown {self.qAddrAcct} {self.filePath()}"""
+        )
+        pyRunAs.as_root_osSystem(
+            f"""chmod 600 {self.filePath()}"""
+        )
+        if result == True:
+            outcome.report(f"""Removed  {line} from {self.filePath()}""")
+        else:
+            outcome.report(f"""{self.filePath()} does not contain {line}, removal skipped""")
+
+        return outcome.set(opResults=result)
+
+
 
 ####+BEGIN: b:py3:cs:method/typing :methodName "deliveryStatus" :deco "default"
     """ #+begin_org

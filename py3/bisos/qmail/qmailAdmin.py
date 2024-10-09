@@ -97,7 +97,7 @@ from bisos.common import csParam
 #from bisos.marmee import aasInMailFps
 #from bisos.marmee import aasOutMailFps
 
-from bisos.qmail import maildrop
+from bisos.marmee import maildrop
 
 from bisos.basics import pyRunAs
 from bisos.common import lines

@@ -226,18 +226,20 @@ def examples_csu(
 
     cs.examples.menuChapter('*Maildir of qAddrAcct*')
 
-    qAddrAcctMaildirParams = od([('qAddrAcct', qmailAcct), ('maildir', "./Maildir"),])
+    qAddrAcctMaildirParams = od([('qAddrAcct', qmailAcct), ('maildir', "./Maildir/"),])
     cmnd('maildir', args="create", pars=qAddrAcctMaildirParams, comment=f" # ")
     cmnd('maildir', args="delete", pars=qAddrAcctMaildirParams, comment=f" # ")
     cmnd('maildir', args="verify", pars=qAddrAcctMaildirParams, comment=f" # ")
 
     cs.examples.menuChapter('*DotQmail*')
 
-    dotQmailMaildirParams = od([('qAddrAcct', qmailAcct), ('localPart', qmailAddr), ('maildir', "./Maildir"),])
+    dotQmailMaildirParams = od([('qAddrAcct', qmailAcct), ('localPart', qmailAddr), ('maildir', "./Maildir/"),])
 
-    cmnd('dotQmail', args="read", pars=dotQmailParams, comment=f" # ")
-    cmnd('dotQmail', args="write", pars=dotQmailParams, comment=f" # ")
-    cmnd('dotQmail', args="addMaildirLine", pars=dotQmailMaildirParams, comment=f" # ")
+    cmnd('dotQmailFile', args="read", pars=dotQmailParams, comment=f" # ")
+    cmnd('dotQmailFile', args="write", pars=dotQmailParams, comment=f" # Not Yet")
+    cmnd('dotQmailFile', args="addMaildirLine", pars=dotQmailMaildirParams, comment=f" # ")
+    cmnd('dotQmailFile', args="addForwardLine 'destEmailComesHere'", pars=dotQmailParams, comment=f" # ")
+    cmnd('dotQmailFile', args="deleteLine 'destEmailComesHere'", pars=dotQmailParams, comment=f" # ")
 
     cs.examples.menuChapter('*VirDomEntry*')
 
@@ -505,13 +507,13 @@ class maildir(cs.Cmnd):
         )
         return cmndArgsSpecDict
 
-####+BEGIN: b:py3:cs:cmnd/classHead :cmndName "dotQmail" :comment "" :extent "verify" :parsMand "qAddrAcct localPart" :argsMin 1 :argsMax 4 :pyInv ""
+####+BEGIN: b:py3:cs:cmnd/classHead :cmndName "dotQmailFile" :comment "" :extent "verify" :parsMand "qAddrAcct localPart" :parsOpt "maildir" :argsMin 1 :argsMax 4 :pyInv ""
 """ #+begin_org
-*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  CmndSvc-   [[elisp:(outline-show-subtree+toggle)][||]] <<dotQmail>>  =verify= parsMand=qAddrAcct localPart argsMin=1 argsMax=4 ro=cli   [[elisp:(org-cycle)][| ]]
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  CmndSvc-   [[elisp:(outline-show-subtree+toggle)][||]] <<dotQmailFile>>  =verify= parsMand=qAddrAcct localPart parsOpt=maildir argsMin=1 argsMax=4 ro=cli   [[elisp:(org-cycle)][| ]]
 #+end_org """
-class dotQmail(cs.Cmnd):
+class dotQmailFile(cs.Cmnd):
     cmndParamsMandatory = [ 'qAddrAcct', 'localPart', ]
-    cmndParamsOptional = [ ]
+    cmndParamsOptional = [ 'maildir', ]
     cmndArgsLen = {'Min': 1, 'Max': 4,}
 
     @cs.track(fnLoc=True, fnEntry=True, fnExit=True)
@@ -520,16 +522,18 @@ class dotQmail(cs.Cmnd):
              cmndOutcome: b.op.Outcome,
              qAddrAcct: typing.Optional[str]=None,  # Cs Mandatory Param
              localPart: typing.Optional[str]=None,  # Cs Mandatory Param
+             maildir: typing.Optional[str]=None,  # Cs Optional Param
              argsList: typing.Optional[list[str]]=None,  # CsArgs
     ) -> b.op.Outcome:
 
         failed = b_io.eh.badOutcome
-        callParamsDict = {'qAddrAcct': qAddrAcct, 'localPart': localPart, }
+        callParamsDict = {'qAddrAcct': qAddrAcct, 'localPart': localPart, 'maildir': maildir, }
         if self.invocationValidate(rtInv, cmndOutcome, callParamsDict, argsList).isProblematic():
             return failed(cmndOutcome)
         cmndArgsSpecDict = self.cmndArgsSpec()
         qAddrAcct = csParam.mappedValue('qAddrAcct', qAddrAcct)
         localPart = csParam.mappedValue('localPart', localPart)
+        maildir = csParam.mappedValue('maildir', maildir)
 ####+END:
         self.cmndDocStr(f""" #+begin_org
 ** [[elisp:(org-cycle)][| *CmndDesc:* | ]] For dotQmail specified by qmailAcct and qmailAddr, update maildrop to maildropQmailAddr.
@@ -544,20 +548,17 @@ class dotQmail(cs.Cmnd):
 
         result: typing.Any = None
 
-        dotQmail = qmail.DotQmail(qAddrAcct, localPart)
+        dotQmail = qmail.DotQmailFile(qAddrAcct, localPart)
 
-        if cmndArg == 'ensureUsersBaseDir':
-            cmndOutcome = qmail.LocalDeliveryAcct.ensureUsersBaseDir()
-        elif cmndArg == 'newUserProc':
-            cmndOutcome = qmail.LocalDeliveryAcct.newUserProc()
-        elif cmndArg == 'add':
-            cmndOutcome = qmail.LocalDeliveryAcct.add(restArgs[0])
-        elif cmndArg == 'delete':
-            cmndOutcome = qmail.LocalDeliveryAcct.delete(restArgs[0])
-        elif cmndArg == 'verify':
-            cmndOutcome = qmail.LocalDeliveryAcct.verify(restArgs[0])
-        elif cmndArg == 'mainDomainGet':
-            cmndOutcome = qmail.LocalDeliveryAcct.mainDomainGet()
+        if cmndArg == 'read':
+            result = dotQmail.contentRead()
+            cmndOutcome.set(opResults=result)
+        elif cmndArg == 'addMaildirLine':
+            cmndOutcome = dotQmail.addMaildirLine(maildir, cmndOutcome)
+        elif cmndArg == 'addForwardLine':
+            cmndOutcome = dotQmail.addForwardLine(restArgs[0], cmndOutcome)
+        elif cmndArg == 'deleteLine':
+            cmndOutcome = dotQmail.deleteLine(restArgs[0], cmndOutcome)
         else:
             b_io.eh.critical_usageError(f"Unknown cmndArg={cmndArg}")
 
