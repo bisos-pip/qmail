@@ -111,13 +111,13 @@ import tempfile
 (setq  b:py:cs:csuList
   (list
    "bisos.b.cs.ro"
-   "blee.icmPlayer.bleep"
+   "bisos.csPlayer.bleep"
    "bisos.marmee.gmailOauth2"
    "bisos.marmee.aasOutMailFps"
  ))
 #+END_SRC
 #+RESULTS:
-| bisos.b.cs.ro | blee.icmPlayer.bleep | bisos.marmee.gmailOauth2 | bisos.marmee.aasOutMailFps |
+| bisos.b.cs.ro | bisos.csPlayer.bleep | bisos.marmee.gmailOauth2 | bisos.marmee.aasOutMailFps |
 #+end_org """
 
 ####+BEGIN: b:py3:cs:framework/csuListProc :pyImports t :csuImports t :csuParams t
@@ -126,12 +126,12 @@ import tempfile
 #+end_org """
 
 from bisos.b.cs import ro
-from blee.icmPlayer import bleep
+from bisos.csPlayer import bleep
 from bisos.marmee import gmailOauth2
 from bisos.marmee import aasOutMailFps
 
 
-csuList = [ 'bisos.b.cs.ro', 'blee.icmPlayer.bleep', 'bisos.marmee.gmailOauth2', 'bisos.marmee.aasOutMailFps', ]
+csuList = [ 'bisos.b.cs.ro', 'bisos.csPlayer.bleep', 'bisos.marmee.gmailOauth2', 'bisos.marmee.aasOutMailFps', ]
 
 g_importedCmndsModules = cs.csuList_importedModules(csuList)
 
@@ -182,7 +182,7 @@ class examples(cs.Cmnd):
 
         cs.examples.commonBrief()
 
-        bleep.examples_icmBasic()
+        bleep.examples_csBasic()
 
         cs.examples.menuChapter('*Qmail Remote From Stdin*')
 

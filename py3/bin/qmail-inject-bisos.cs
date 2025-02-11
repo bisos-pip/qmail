@@ -117,7 +117,7 @@ from bisos.marmee import aasMailFps
 (setq  b:py:cs:csuList
   (list
    "bisos.b.cs.ro"
-   "blee.icmPlayer.bleep"
+   "bisos.csPlayer.bleep"
    "bisos.marmee.gmailOauth2"
    "bisos.marmee.aasOutMailFps"
    "bisos.qmail.qmailInjectWrapper"
@@ -125,7 +125,7 @@ from bisos.marmee import aasMailFps
  ))
 #+END_SRC
 #+RESULTS:
-| bisos.b.cs.ro | blee.icmPlayer.bleep | bisos.marmee.gmailOauth2 | bisos.marmee.aasOutMailFps | bisos.qmail.qmailInjectWrapper | bisos.qmail.qmailRemoteWrapper |
+| bisos.b.cs.ro | bisos.csPlayer.bleep | bisos.marmee.gmailOauth2 | bisos.marmee.aasOutMailFps | bisos.qmail.qmailInjectWrapper | bisos.qmail.qmailRemoteWrapper |
 #+end_org """
 
 ####+BEGIN: b:py3:cs:framework/csuListProc :pyImports t :csuImports t :csuParams t
@@ -134,14 +134,14 @@ from bisos.marmee import aasMailFps
 #+end_org """
 
 from bisos.b.cs import ro
-from blee.icmPlayer import bleep
+from bisos.csPlayer import bleep
 from bisos.marmee import gmailOauth2
 from bisos.marmee import aasOutMailFps
 from bisos.qmail import qmailInjectWrapper
 from bisos.qmail import qmailRemoteWrapper
 
 
-csuList = [ 'bisos.b.cs.ro', 'blee.icmPlayer.bleep', 'bisos.marmee.gmailOauth2', 'bisos.marmee.aasOutMailFps', 'bisos.qmail.qmailInjectWrapper', 'bisos.qmail.qmailRemoteWrapper', ]
+csuList = [ 'bisos.b.cs.ro', 'bisos.csPlayer.bleep', 'bisos.marmee.gmailOauth2', 'bisos.marmee.aasOutMailFps', 'bisos.qmail.qmailInjectWrapper', 'bisos.qmail.qmailRemoteWrapper', ]
 
 g_importedCmndsModules = cs.csuList_importedModules(csuList)
 
@@ -184,7 +184,7 @@ class examples(cs.Cmnd):
 
         cs.examples.commonBrief()
 
-        bleep.examples_icmBasic()
+        bleep.examples_csBasic()
 
         qmailInjectWrapper.examples_csu(sectionTitle="default")
         qmailRemoteWrapper.examples_csu(sectionTitle="default")

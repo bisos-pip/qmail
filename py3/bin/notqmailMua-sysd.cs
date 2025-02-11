@@ -104,7 +104,7 @@ import collections
 (setq  b:py:cs:csuList
   (list
    "bisos.b.cs.ro"    ;; Must be included even when unused
-   "blee.icmPlayer.bleep"
+   "bisos.csPlayer.bleep"
    "bisos.b.clsMethod_csu"
    ;; "bisos.debian.configFile"
    "bisos.debian.bifSystemd"
@@ -112,7 +112,7 @@ import collections
  ))
 #+END_SRC
 #+RESULTS:
-| bisos.b.cs.ro | blee.icmPlayer.bleep | bisos.b.clsMethod_csu | bisos.debian.bifSystemd | bisos.qmail.notqmailSysd |
+| bisos.b.cs.ro | bisos.csPlayer.bleep | bisos.b.clsMethod_csu | bisos.debian.bifSystemd | bisos.qmail.notqmailSysd |
 #+end_org """
 
 ####+BEGIN: b:py3:cs:framework/csuListProc :pyImports t :csuImports t :csuParams t
@@ -121,13 +121,13 @@ import collections
 #+end_org """
 
 from bisos.b.cs import ro
-from blee.icmPlayer import bleep
+from bisos.csPlayer import bleep
 from bisos.b import clsMethod_csu
 from bisos.debian import bifSystemd
 from bisos.qmail import notqmailSysd
 
 
-csuList = [ 'bisos.b.cs.ro', 'blee.icmPlayer.bleep', 'bisos.b.clsMethod_csu', 'bisos.debian.bifSystemd', 'bisos.qmail.notqmailSysd', ]
+csuList = [ 'bisos.b.cs.ro', 'bisos.csPlayer.bleep', 'bisos.b.clsMethod_csu', 'bisos.debian.bifSystemd', 'bisos.qmail.notqmailSysd', ]
 
 g_importedCmndsModules = cs.csuList_importedModules(csuList)
 
@@ -181,7 +181,7 @@ class examples(cs.Cmnd):
 
         cs.examples.commonBrief()
 
-        bleep.examples_icmBasic()
+        bleep.examples_csBasic()
 
         # cs.examples.menuChapter('*Currents Examples Settings*')
         # cur_examples()
